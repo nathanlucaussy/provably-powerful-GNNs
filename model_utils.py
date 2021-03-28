@@ -6,8 +6,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
 decay_parameters = [0.5, 1]
 
-def epoch_train(model_to_train, train_set):
-    model_to_train.train()
+def epoch_train(model, train_set):
+    model.train()
     loader = tg.data.DataLoader(train_set, 1)
     loss_sum = 0
     count = 0
@@ -31,13 +31,13 @@ def epoch_train(model_to_train, train_set):
     #return loss normalised for number of batches
     return (loss_sum/count)
 
-def train(model_to_train, train_set_, num_epochs, verbose=False):
+def train(model, train_set, num_epochs, verbose=False):
     for epoch in range(num_epochs):
-        epoch_loss = epoch_train(model_to_train, train_set)
+        epoch_loss = epoch_train(model, train_set)
         if verbose:
             print("Epoch: " +str(epoch) + " Loss: " + str(epoch_loss))
 
-def parameter_search(model_to_validate, num_epochs, dataset, verbose=False):
+def parameter_search(model, num_epochs, dataset, verbose=False):
     #split data into training and validation sets:
     shuffled_dataset = dataset
     random.shuffle()
@@ -56,29 +56,29 @@ def parameter_search(model_to_validate, num_epochs, dataset, verbose=False):
             #train model on those params
             print("Training: start - lr: " + str(learn_rate) + ' decay: '+str(decay))
             for epoch in range(num_epochs):
-                epoch_loss = epoch_train(model_to_train, train_set)
+                epoch_loss = epoch_train(model, train_set)
                 if verbose:
                     print("Epoch: " + str(epoch) + " Loss: " + str(epoch_loss))
             print("End-training")
 
             #validate model on those params
-            accuracy = test(model_to_validate)
+            accuracy = test(model)
             results_dict[lr][decay] = accuracy
     return results_dict
 
-def test(model_to_test, test_set):
+def test(model, test_set):
     correct = 0
     total = 0
     #basic testing: check if out matches y label
     for data in test_set:
-        out = model_to_test(data)
+        out = model(data)
         if ((data.y[0].item() == 1 and out[0].item() > 0.0)
             or (data.y[0].item() == -1 and out[0].item() <= 0.0)):
             correct += 1
         total += 1
     return(correct/total)
 
-def CV_10(model_to_test, dataset, num_epochs):
+def CV_10(model, dataset, num_epochs):
     #Partition dataset into 10 sets/chunks for Cross-Validation
     increment = Math.ceil(dataset.length / 10)
     CV_chunks = [dataset[i*increment: (i*increment)+increment] for i in range(9)]
