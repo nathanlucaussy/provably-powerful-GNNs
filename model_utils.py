@@ -3,7 +3,7 @@ import torch_geometric as tg
 import torch
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
+lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
 decay_parameters = [0.5, 1]
 
 def epoch_train(model_to_train, train_set):
