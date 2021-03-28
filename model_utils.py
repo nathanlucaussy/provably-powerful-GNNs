@@ -50,13 +50,13 @@ def parameter_search(model, num_epochs, dataset, verbose=False):
     results_dict = dict()
 
     #train & validate model on each combination of parameters
-    for learn_rate in lr_parameters:
+    for lr in lr_parameters:
         results_dict[lr] = dict()
         for decay in decay_parameters:
-            optimizer = torch.optim.Adam(model.parameters(), lr=learn_rate)
+            optimizer = torch.optim.Adam(model.parameters(), lr=lr)
             scheduler = torch.optim.lr_scheduler.StepLR(optimizer, decay, step_size=20, last_epoch=-1, verbose=False)
             #train model on those params
-            print("Training: start - lr: " + str(learn_rate) + ' decay: '+str(decay))
+            print("Training: start - lr: " + str(lr) + ' decay: '+str(decay))
             for epoch in range(num_epochs):
                 epoch_loss = epoch_train(model, train_set)
                 if verbose:
