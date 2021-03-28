@@ -64,7 +64,7 @@ def parameter_search(model, num_epochs, dataset, verbose=False):
             print("End-training")
 
             #validate model on those params
-            accuracy = test(model)
+            accuracy = test(model, validation_set)
             results_dict[lr][decay] = accuracy
     return results_dict
 
