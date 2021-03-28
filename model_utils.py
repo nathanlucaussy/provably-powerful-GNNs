@@ -101,7 +101,7 @@ def CV_10(model, dataset, num_epochs):
         #Train Model
         for epoch in range(num_epochs):
             print('epoch', epoch)
-            loss = train_epoch(model, train_chunks)
+            loss = epoch_train(model, train_chunks)
             #display results as the model is training
             if epoch % (int(num_epochs/30)) == 0:
                 print('accuracy', test(model, test_chunk))
