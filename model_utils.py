@@ -1,6 +1,7 @@
 import random
 import torch_geometric as tg
 import torch
+from random import shuffle
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
@@ -40,7 +41,7 @@ def train(model, train_set, num_epochs, verbose=False):
 def parameter_search(model, num_epochs, dataset, verbose=False):
     #split data into training and validation sets:
     shuffled_dataset = dataset
-    random.shuffle()
+    shuffle(shuffled_dataset)
     split_point = torch.ceil(len(dataset)/9)
     train_set = shuffled_dataset[:split_point]
     validation_set = shuffled_dataset[split_point:]
