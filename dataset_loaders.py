@@ -41,7 +41,7 @@ def load_dataset(name, has_node_features):
         nx_graph.add_edges_from(cur_graph_edges)
 
         #convert to torch_geometric graph
-        tg_graph = tg_1 = tg.utils.from_networkx(nx_graph)
+        tg_graph = tg.utils.from_networkx(nx_graph)
 
         if has_node_features:
             tg_graph.x = torch.tensor(cur_node_labels)
