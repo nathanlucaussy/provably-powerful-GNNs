@@ -7,7 +7,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
 decay_parameters = [0.5, 1]
 
-def epoch_train(model, train_set):
+def epoch_train(model, train_set, optimizer):
     model.train()
     loader = tg.data.DataLoader(train_set, 1)
     loss_sum = 0
@@ -32,9 +32,9 @@ def epoch_train(model, train_set):
     #return loss normalised for number of batches
     return (loss_sum/count)
 
-def train(model, train_set, num_epochs, verbose=False):
+def train(model, train_set, num_epochs, optimizer, verbose=False):
     for epoch in range(num_epochs):
-        epoch_loss = epoch_train(model, train_set)
+        epoch_loss = epoch_train(model, train_set, optimizer)
         if verbose:
             print("Epoch: " +str(epoch) + " Loss: " + str(epoch_loss))
 
@@ -58,7 +58,7 @@ def parameter_search(model, num_epochs, dataset, verbose=False):
             #train model on those params
             print("Training: start - lr: " + str(lr) + ' decay: '+str(decay))
             for epoch in range(num_epochs):
-                epoch_loss = epoch_train(model, train_set)
+                epoch_loss = epoch_train(model, train_set, optimizer)
                 if verbose:
                     print("Epoch: " + str(epoch) + " Loss: " + str(epoch_loss))
             print("End-training")
@@ -86,6 +86,7 @@ def CV_10(model, dataset, num_epochs):
     CV_chunks = [dataset[i*increment: (i*increment)+increment] for i in range(9)]
     CV_chunks += dataset[9*increment:]
     accuracy_sum = 0
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
 
     #For each partition:
     for test_chunk_index in range(len(CV_chunks)):
@@ -101,7 +102,7 @@ def CV_10(model, dataset, num_epochs):
         #Train Model
         for epoch in range(num_epochs):
             print('epoch', epoch)
-            loss = epoch_train(model, train_chunks)
+            loss = epoch_train(model, train_chunks,  optimizer)
             #display results as the model is training
             if epoch % (num_epochs // 30) == 0:
                 print('accuracy', test(model, test_chunk))
