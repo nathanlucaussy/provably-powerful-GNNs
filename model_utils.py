@@ -82,7 +82,7 @@ def test(model, test_set):
 
 def CV_10(model, dataset, num_epochs):
     #Partition dataset into 10 sets/chunks for Cross-Validation
-    increment = torch.ceil(dataset.length / 10)
+    increment = torch.ceil(len(dataset) / 10)
     CV_chunks = [dataset[i*increment: (i*increment)+increment] for i in range(9)]
     CV_chunks += dataset[9*increment:]
     accuracy_sum = 0
