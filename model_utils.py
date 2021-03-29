@@ -42,7 +42,7 @@ def parameter_search(model, num_epochs, dataset, verbose=False):
     #split data into training and validation sets:
     shuffled_dataset = dataset
     shuffle(shuffled_dataset)
-    split_point = torch.ceil(len(dataset)/9)
+    split_point = len(dataset) // 9
     train_set = shuffled_dataset[:split_point]
     validation_set = shuffled_dataset[split_point:]
 
@@ -82,7 +82,7 @@ def test(model, test_set):
 
 def CV_10(model, dataset, num_epochs):
     #Partition dataset into 10 sets/chunks for Cross-Validation
-    increment = torch.ceil(len(dataset) / 10)
+    increment = len(dataset) // 10
     CV_chunks = [dataset[i*increment: (i*increment)+increment] for i in range(9)]
     CV_chunks += dataset[9*increment:]
     accuracy_sum = 0
@@ -103,7 +103,7 @@ def CV_10(model, dataset, num_epochs):
             print('epoch', epoch)
             loss = epoch_train(model, train_chunks)
             #display results as the model is training
-            if epoch % (int(num_epochs/30)) == 0:
+            if epoch % (num_epochs // 30) == 0:
                 print('accuracy', test(model, test_chunk))
                 print('loss', loss)
 
