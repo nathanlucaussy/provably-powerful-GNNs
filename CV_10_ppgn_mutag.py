@@ -3,5 +3,5 @@ from models.ppgn import PPGN
 from dataset_loaders import load_dataset
 
 ppgn = PPGN()
-mutag = load_dataset("MUTAG", True)
-CV_10(ppgn, mutag, 10)
+mutag = load_dataset('MUTAG')
+CV_10(ppgn, mutag, 100)

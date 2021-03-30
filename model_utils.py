@@ -1,6 +1,7 @@
 import random
 import torch_geometric as tg
 import torch
+import torch.nn.functional as F
 from random import shuffle
 #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -9,20 +10,17 @@ decay_parameters = [0.5, 1]
 
 def epoch_train(model, train_set, optimizer):
     model.train()
-    loader = tg.data.DataLoader(train_set, 1)
+    loader = tg.data.DataLoader(train_set, batch_size=1, shuffle=True)
     loss_sum = 0
     count = 0
-    for data in loader:
+    for X, y in loader:
 
-        x = data.x
-
-        data = data.to(device)
+        X = X.to(device)
+        y = y.to(device)
         optimizer.zero_grad()
-
-        loss_func = torch.nn.BCELoss()
-
-        out = model(data)
-        loss = loss_func(out, data.y)
+        
+        out = model(X)
+        loss = F.cross_entropy(out, y, reduction='sum')
 
         loss.backward()
 
@@ -72,21 +70,22 @@ def test(model, test_set):
     correct = 0
     total = 0
     #basic testing: check if out matches y label
-    for data in test_set:
-        out = model(data)
-        if ((data.y[0].item() == 1 and out[0].item() > 0.0)
-            or (data.y[0].item() == -1 and out[0].item() <= 0.0)):
+    for X, y in test_set:
+        X = X.to(device)
+        out = model(torch.unsqueeze(X, 0))
+        #if ((data.y[0].item() == 1 and out[0].item() > 0.0)
+        #    or (data.y[0].item() == -1 and out[0].item() <= 0.0)):
+        if int(torch.argmax(out, 1)) == int(y):
             correct += 1
         total += 1
     return(correct/total)
 
 def CV_10(model, dataset, num_epochs):
     #Partition dataset into 10 sets/chunks for Cross-Validation
-    increment = len(dataset) // 10
-    CV_chunks = [dataset[i*increment: (i*increment)+increment] for i in range(9)]
-    CV_chunks += dataset[9*increment:]
+    CV_chunks = partition(dataset, 10)
     accuracy_sum = 0
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
+    model = model.to(device)
 
     #For each partition:
     for test_chunk_index in range(len(CV_chunks)):
@@ -95,10 +94,10 @@ def CV_10(model, dataset, num_epochs):
         for index in range(len(CV_chunks)):
             if index == test_chunk_index:
                 test_chunk = CV_chunks[index]
+            #elif train_chunks is None:
+            #    train_chunks = CV_chunks[index]
             else:
                 train_chunks += CV_chunks[index]
-        random.shuffle(train_chunks)
-
         #Train Model
         for epoch in range(num_epochs):
             print('epoch', epoch)
@@ -111,3 +110,24 @@ def CV_10(model, dataset, num_epochs):
         #Test Model
         accuracy_sum += test(model, test_chunk)
     return(accuracy_sum/5)
+
+def partition(dataset, num_parts):
+    N = len(dataset)
+    part_size = N // num_parts
+    mod = N % num_parts
+    partitions = []
+    count = 0
+    part_start = 0
+    while count < mod:
+        part_end = part_start + part_size + 1
+        partitions.append(dataset[part_start:part_end])
+        part_start = part_end
+        count += 1
+    while count < num_parts:
+        part_end = part_start + part_size
+        partitions.append(dataset[part_start:part_end])
+        part_start = part_end
+        count += 1
+    
+    return partitions
+    
