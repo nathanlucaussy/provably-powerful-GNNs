@@ -27,7 +27,7 @@ class PPGN(nn.Module):
             self.fc_layers.append(FullyConnected(512, 256))
             self.fc_layers.append(FullyConnected(256, num_classes, activation=None))
 
-    def __forward(self, x):
+    def forward(self, x):
         scores = torch.tensor(0, device=x.device, dtype=x.dtype)
 
         for i, block in enumerate(self.blocks):

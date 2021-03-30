@@ -55,19 +55,27 @@ def old_load_dataset(name, has_node_features):
     #load dataset portions from csv files - **modelled on the MUTAG dataset format**
     with open('./datasets/'+name+'/edges', newline='') as f:
         reader = csv.reader(f)
-        edges = list(reader)
+        edges = []
+        for record in reader:
+            edges.append((float(record[0]), float(record[1])))
     with open('./datasets/'+name+'/graph_idx', newline='') as f:
         reader = csv.reader(f)
-        graph_indices = list(reader)
+        graph_indices = []
+        for record in reader:
+            graph_indices.append(int(record[0]))
 
     with open('./datasets/'+name+'/graph_labels', newline='') as f:
         reader = csv.reader(f)
-        graph_labels = list(reader)
+        graph_labels = []
+        for record in reader:
+            graph_labels.append(int(record[0]))
 
     if has_node_features:
         with open('./datasets/'+name+'/node_labels', newline='') as f:
             reader = csv.reader(f)
-            node_labels = list(reader)
+            node_labels = []
+            for record in reader:
+                node_labels.append(int(record[0]))
 
     #parse graphs from CSVs and create torch_geometric dataset
     node_index = 0
@@ -91,6 +99,6 @@ def old_load_dataset(name, has_node_features):
         if has_node_features:
             tg_graph.x = torch.tensor(cur_node_labels)
 
-        tg_graph.y = torch.tensor(graph_labels[graph_indices])
+        tg_graph.y = torch.tensor(graph_labels[graph_index])
         dataset.append(tg_graph)
     return dataset
