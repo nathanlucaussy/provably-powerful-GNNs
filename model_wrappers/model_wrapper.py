@@ -1,4 +1,4 @@
-from pytorch_geometric.datasets import TUDataset
+from torch_geometric.datasets import TUDataset
 
 class ModelWrapper:
     
