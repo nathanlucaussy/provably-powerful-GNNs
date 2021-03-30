@@ -5,3 +5,4 @@ from dataset_loaders import load_dataset
 ppgn = PPGN()
 mutag = load_dataset('MUTAG')
 CV_10(ppgn, mutag, 100)
+
