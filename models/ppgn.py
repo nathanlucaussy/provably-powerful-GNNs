@@ -34,7 +34,7 @@ class PPGN(nn.Module):
             x = block(x)
 
             if self.new_suffix:
-                scores += self.fc_layers[i](diag_offdiag_maxpool(x))
+                scores = self.fc_layers[i](diag_offdiag_maxpool(x)) + scores
 
         if not self.new_suffix:
             x = diag_offdiag_maxpool(x)

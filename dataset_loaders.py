@@ -44,7 +44,8 @@ def transform_to_adjacency_matrix_with_features(sparse_mat, node_labels, num_nod
         #encode adjacency matrix on index [0] of the innermost vectors / feature vector, indexed by edges
         for col_index in range(num_nodes):
             adj_and_features_array[row_index][col_index][0] = 1
-    return(torch.from_numpy(adj_and_features_array))
+    transposed = np.transpose(adj_and_features_array, [2,0,1])
+    return(torch.from_numpy(transposed))
 
 # transform a torch_geometric.data.Data object to the matrix needed for PPGN-style models and *graph label*
 def transform_tg_to_ppgn_data(data):
@@ -52,7 +53,9 @@ def transform_tg_to_ppgn_data(data):
     num_nodes = data.num_nodes
     node_labels = one_hot_to_ints(data.x)
     num_node_labels = data.x[0].shape[0]
-    return((transform_to_adjacency_matrix_with_features(edge_index, node_labels, num_nodes, num_node_labels), int(data.y[0])))
+    #graph_label = torch.tensor([0, 1]) if int(data.y) == 1 else torch.tensor([1, 0])
+    graph_label = int(data.y)
+    return((transform_to_adjacency_matrix_with_features(edge_index, node_labels, num_nodes, num_node_labels), graph_label))
 
 
 #DEPRECATED - method to load datasets in practical-style format
