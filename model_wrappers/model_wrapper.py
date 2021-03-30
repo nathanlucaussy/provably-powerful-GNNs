@@ -1,9 +1,10 @@
 from torch_geometric.datasets import TUDataset
+import os
 
 class ModelWrapper:
     
     use_node_attr = True
-    data_dir = '../tg_datasets/'
+    data_dir = os.path.join(os.path.dirname(__file__), '../tg_datasets')
     
     def __init__(self, dataset, config):
         self.data = TUDataset(self.data_dir,
