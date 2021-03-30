@@ -31,7 +31,8 @@ def main():
                   \n{datasets}')
         return
     
-    models[args.model].run(args.dataset, args.config)
+    model_wrapper = models[args.model](args.dataset, args.config)
+    model_wrapper.run()
     
 if __name__ == '__main__':
     main()
