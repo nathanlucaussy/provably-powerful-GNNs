@@ -1,7 +1,8 @@
 import argparse
+from model_wrappers.PPGN_wrapper import PPGNWrapper
 
 models = {
-    'PPGN' : None
+    'PPGN' : PPGNWrapper
 }
 
 datasets = [
