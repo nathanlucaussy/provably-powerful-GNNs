@@ -114,7 +114,7 @@ def CV_10(model, dataset, config):
 
         #Test Model
         accuracy_sum += test(model, test_chunk)
-    return(accuracy_sum/5)
+    return(accuracy_sum / 10)
 
 def partition(dataset, num_parts):
     N = len(dataset)
