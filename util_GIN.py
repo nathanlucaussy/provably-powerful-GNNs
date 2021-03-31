@@ -31,28 +31,6 @@ def one_hot_to_ints(tensor):
                 out_array[row_index] = col_index
     return(torch.from_numpy(out_array))
 
-# takes a torch_geometric style adjacency list and node features.
-# outputs matrix for input to PPGN-style models
-def transform_to_adjacency_matrix_with_features(sparse_mat, node_labels, num_nodes, num_node_labels):
-    adj_mat = [[0 for i in range(num_nodes)] for j in range(num_nodes)]
-    for index in range(len(sparse_mat[0])):
-        adj_mat[sparse_mat[0][index]][sparse_mat[1][index]] = 1
-
-    adj_and_features_array = np.zeros(shape=(num_nodes, num_nodes, num_node_labels + 1), dtype=np.float32)
-    for row_index in range(num_nodes):
-
-        #encode node label (feature) for node 'row_index' as a one-hot encoding at the self-loop
-        #on indices [1 ... num_node_labels + 1]
-
-
-        adj_and_features_array[row_index][row_index][int(node_labels[row_index][0])+1] = 1
-
-        #encode adjacency matrix on index [0] of the innermost vectors / feature vector, indexed by edges
-        for col_index in range(num_nodes):
-            adj_and_features_array[row_index][col_index][0] = 1
-    return(torch.from_numpy(adj_and_features_array))
-
-
 def transform_tg_to_gin_data(data):
     edge_index = data.edge_index
     num_nodes = data.num_nodes
@@ -67,10 +45,9 @@ def transform_tg_to_gin_data(data):
     for i, j in nx_graph.edges():
         neighbors[i].append(j)
         neighbors[j].append(i)
-    degree_list = []
     degree_max = 0
     for i in range(num_nodes):
-        degree_max = max(len(nx_graph.neighbors[i]), degree_max) 
+        degree_max = max(len(neighbors[i]), degree_max) 
     
     g = S2VGraph(nx_graph, label, node_tags)
 
@@ -78,7 +55,6 @@ def transform_tg_to_gin_data(data):
     g.node_features = node_features
     g.edge_mat = edge_index
     g.max_neighbor = degree_max
-
 
     return g 
 
