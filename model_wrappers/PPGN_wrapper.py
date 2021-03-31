@@ -1,8 +1,5 @@
-import torch
-import numpy as np
 from .model_wrapper import ModelWrapper
 from models import PPGN
-import sys
 from utils import one_hot_to_ints, to_adj_mat_with_features
 
 class PPGNWrapper(ModelWrapper):
