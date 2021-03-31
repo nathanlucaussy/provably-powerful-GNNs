@@ -15,12 +15,6 @@ class PPGNWrapper(ModelWrapper):
     
     def __init__(self, dataset, config):
         super(PPGNWrapper, self).__init__(dataset, config)
-        for key in config:
-            try:
-                self.config[key] = type(self.config[key])(config[key])
-            except KeyError:
-                print(f'Config key \'{key}\' is not valid for PPGN')
-                sys.exit()
         
         self.config['node_labels'] = self.data.num_node_labels
         self.config['num_classes'] = self.data.num_classes
