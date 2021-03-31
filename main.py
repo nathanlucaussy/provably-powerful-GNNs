@@ -33,7 +33,9 @@ def main():
         return
     
     model_wrapper = models[args.model](args.dataset, args.config)
-    model_wrapper.run()
+    accuracy = model_wrapper.run()
+    print('\n\nRUN COMPLETED')
+    print(f'Accuracy of {args.model} on {args.dataset} is: {accuracy}')
     
 if __name__ == '__main__':
     main()
