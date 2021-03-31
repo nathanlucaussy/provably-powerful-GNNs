@@ -84,16 +84,18 @@ def CV_10(model, dataset, config):
     #Partition dataset into 10 sets/chunks for Cross-Validation
     num_epochs = config['epochs']
     lr = config['lr']
-    CV_chunks = partition(dataset, 10)
+    print_freq = config['print_freq']
+    num_parts = 10
+    CV_chunks = partition(dataset, num_parts)
     accuracy_sum = 0
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     model = model.to(device)
 
     #For each partition:
-    for test_chunk_index in range(len(CV_chunks)):
+    for test_chunk_index in range(num_parts):
         #build up the training and testing sets for CV (train_set is all sets)
         train_chunks = []
-        for index in range(len(CV_chunks)):
+        for index in range(num_parts):
             if index == test_chunk_index:
                 test_chunk = CV_chunks[index]
             #elif train_chunks is None:
@@ -101,13 +103,14 @@ def CV_10(model, dataset, config):
             else:
                 train_chunks += CV_chunks[index]
         #Train Model
-        for epoch in range(num_epochs):
-            print('epoch', epoch)
+        print(f'\nTraining using test chunk {test_chunk_index+1}/{num_parts}')
+        for epoch in range(1, num_epochs + 1):
+            print(f'epoch: {epoch}/{num_epochs}')
             loss = epoch_train(model, train_chunks,  optimizer)
             #display results as the model is training
-            if epoch % (num_epochs // 30) == 0:
-                print('accuracy', test(model, test_chunk))
-                print('loss', loss)
+            if epoch % print_freq == 0:
+                print('accuracy:', test(model, test_chunk))
+                print('loss:', loss)
 
         #Test Model
         accuracy_sum += test(model, test_chunk)

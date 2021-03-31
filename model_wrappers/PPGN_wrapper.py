@@ -8,7 +8,8 @@ class PPGNWrapper(ModelWrapper):
     
     config = {
         'lr' : 0.0005,
-        'epochs': 100
+        'epochs': 100,
+        'print_freq': 20
     }
     
     def __init__(self, dataset, config):
