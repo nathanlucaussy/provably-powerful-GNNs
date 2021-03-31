@@ -2,12 +2,27 @@ import torch
 import numpy as np
 from .model_wrapper import ModelWrapper
 from models import PPGN
+import sys
 
 class PPGNWrapper(ModelWrapper):
     
+    config = {
+        'lr' : 0.0005,
+        'epochs': 100
+    }
+    
     def __init__(self, dataset, config):
         super(PPGNWrapper, self).__init__(dataset, config)
-        self.model = PPGN.ppgn.PPGN()
+        for key in config:
+            try:
+                self.config[key] = type(self.config[key])(config[key])
+            except KeyError:
+                print(f'Config key \'{key}\' is not valid for PPGN')
+                sys.exit()
+        
+        self.config['node_labels'] = self.data.num_node_labels
+        self.config['num_classes'] = self.data.num_classes
+        self.model = PPGN.ppgn.PPGN(self.config)                
      
     # transform a torch_geometric.data.Data object to the matrix needed for PPGN-style models and *graph label*
     def transform_data(self, data):
@@ -23,7 +38,9 @@ class PPGNWrapper(ModelWrapper):
                 graph_label))
     
     def run(self):
-        PPGN.model_utils.CV_10(self.model, self.data, 100)
+        accuracy = PPGN.model_utils.CV_10(self.model, self.data, self.config)
+        return accuracy
+        
     
     def _one_hot_to_ints(self, tensor):
         out_array = np.zeros(shape=(tensor.shape[0], 1))

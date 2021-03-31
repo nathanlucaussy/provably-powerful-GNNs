@@ -2,13 +2,14 @@ import torch
 import torch.nn as nn
 
 class PPGN(nn.Module):
-    def __init__(self):
+    def __init__(self, config):
         super().__init__()
         # Hard-coded config values
         self.new_suffix = True 
         block_features = [400, 400, 400]
-        node_labels = 7 # TODO: Depends on dataset so will need to be parameterized by a config
-        num_classes = 2 # TODO: Depends on dataset so will need to be parameterized by a config
+        
+        node_labels = config['node_labels']
+        num_classes = config['num_classes']
         num_orig_features = node_labels + 1
 
 

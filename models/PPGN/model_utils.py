@@ -80,11 +80,13 @@ def test(model, test_set):
         total += 1
     return(correct/total)
 
-def CV_10(model, dataset, num_epochs):
+def CV_10(model, dataset, config):
     #Partition dataset into 10 sets/chunks for Cross-Validation
+    num_epochs = config['epochs']
+    lr = config['lr']
     CV_chunks = partition(dataset, 10)
     accuracy_sum = 0
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     model = model.to(device)
 
     #For each partition:
