@@ -1,4 +1,5 @@
 import argparse
+import re
 from model_wrappers.PPGN_wrapper import PPGNWrapper
 
 models = {
@@ -15,7 +16,7 @@ def main():
                         help=f'which model to use (default: PPGN) out of {models.keys()}')
     parser.add_argument('--dataset', type=str, default='MUTAG',
                         help='name of dataset (default: MUTAG)')
-    parser.add_argument('--config', type=dict, default={},
+    parser.add_argument('--config', type=dict_load, default={},
                         help='config params for model: e.g. \'{lr: 0.001, epochs: 100}\'')
     
     args = parser.parse_args()
@@ -36,6 +37,11 @@ def main():
     accuracy = model_wrapper.run()
     print('\n\nRUN COMPLETED')
     print(f'Accuracy of {args.model} on {args.dataset} is: {accuracy}')
+
+# Convert string to dict    
+def dict_load(s):
+    s = s[1:-1]
+    return dict([re.split('\W*:\W*', pair) for pair in re.split('\W*,\W*', s)])
     
 if __name__ == '__main__':
     main()
