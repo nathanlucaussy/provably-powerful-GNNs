@@ -1,9 +1,10 @@
 import argparse
 import re
-from model_wrappers.PPGN_wrapper import PPGNWrapper
+from model_wrappers import *
 
 models = {
-    'PPGN' : PPGNWrapper
+    'PPGN' : PPGNWrapper,
+    'GIN' : GINWrapper
 }
 
 datasets = [
