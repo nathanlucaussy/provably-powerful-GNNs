@@ -12,7 +12,7 @@ def one_hot_to_ints(tensor):
 
 # takes a torch_geometric style adjacency list and node features.
 # outputs matrix for input to PPGN-style models
-def to_adj_mat_with_features(self, sparse_mat, node_labels, num_nodes, num_node_labels):
+def to_adj_mat_with_features(sparse_mat, node_labels, num_nodes, num_node_labels):
     adj_mat = [[0 for i in range(num_nodes)] for j in range(num_nodes)]
     for index in range(len(sparse_mat[0])):
         adj_mat[sparse_mat[0][index]][sparse_mat[1][index]] = 1
