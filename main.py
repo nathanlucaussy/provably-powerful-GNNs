@@ -23,7 +23,7 @@ def main():
     if args.model not in models:
         print(f'The model you have provided ({args.model}) is not a valid model.\
                   \nPlease choose one of the following:\
-                  \n{models.keys()}')
+                  \n{list(models.keys())}')
         return
     
     if args.dataset not in datasets:
