@@ -38,9 +38,9 @@ class GINWrapper(ModelWrapper):
         self.download_repo(self.repo_url, 'GIN')
         #self.import_model_dir()
         #os.chdir(self.model_dir)
-        GIN_root_dir = os.path.join(self.model_dir, 'powerful_gnns_master')
+        GIN_root_dir = os.path.join(self.model_dir, 'powerful-gnns-master')
         GIN_model_dir = os.path.join(GIN_root_dir, 'models')
-        sys.path.insert(0, os.path.join(self.model_dir, 'powerful_gnns_master'))
+        sys.path.insert(0, GIN_root_dir)
         sys.path.append(GIN_model_dir)
         import main
         self.GIN_main = main
