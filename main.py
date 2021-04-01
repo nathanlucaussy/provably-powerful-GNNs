@@ -14,11 +14,11 @@ datasets = [
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default='PPGN',
-                        help=f'which model to use (default: PPGN) out of {models.keys()}')
+                        help=f'which model to use (default: PPGN) out of {list(models.keys())}')
     parser.add_argument('--dataset', type=str, default='MUTAG',
                         help='name of dataset (default: MUTAG)')
     parser.add_argument('--config', type=dict_load, default={},
-                        help='config params for model: e.g. \'{lr: 0.001, epochs: 100}\'')
+                        help='config params for model in double quotes: e.g. "{lr: 0.001, epochs: 100}"')
     
     args = parser.parse_args()
     
