@@ -88,12 +88,14 @@ class GINWrapper(ModelWrapper):
         optimizer = self.GIN_main.optim.Adam(model.parameters(), lr=conf.lr)
         scheduler = self.GIN_main.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
     
+        acc_sum = 0
         for train_graphs, test_graphs in cross_val_generator(graphs, 10):
             for epoch in range(1, conf.epochs + 1):
                 scheduler.step()
         
                 avg_loss = self.GIN_main.train(conf, model, device, train_graphs, optimizer, epoch)
                 acc_train, acc_test = self.GIN_main.test(conf, model, device, train_graphs, test_graphs, epoch)
+                acc_sum += acc_test
         
                 if not conf.filename == "":
                     with open(conf.filename, 'w') as f:
@@ -102,6 +104,8 @@ class GINWrapper(ModelWrapper):
                 print("")
         
                 print(model.eps)
+        avg_acc = acc_sum / 10
+        return avg_acc
         
     
 class S2VGraph(object):
