@@ -1,5 +1,6 @@
 from torch_geometric.datasets import TUDataset
 import os
+import sys
 from urllib.request import urlopen
 from zipfile import ZipFile
 
@@ -17,7 +18,11 @@ class ModelWrapper:
                               transform=self.transform_data,
                               use_node_attr=self.use_node_attr)
         for key, value in config.items():
-            setattr(self.config, key, value)
+            if hasattr(self.config, key):
+                setattr(self.config, key, type(getattr(self.config, key))(value))
+            else:
+                print(f'Config key \'{key}\' is not valid for PPGN')
+                sys.exit()                
         
     # transform a torch_geometric.data.Data object to whatever format this model requires
     def transform_data(self, data):
