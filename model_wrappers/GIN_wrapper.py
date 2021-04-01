@@ -34,8 +34,6 @@ class GINWrapper(ModelWrapper):
     def __init__(self, dataset, config):
         super(GINWrapper, self).__init__(dataset, config)
         self.download_repo(self.repo_url, 'GIN')
-        #self.import_model_dir()
-        #os.chdir(self.model_dir)
         GIN_root_dir = os.path.join(self.model_dir, 'powerful-gnns-master')
         GIN_model_dir = os.path.join(GIN_root_dir, 'models')
         sys.path.insert(0, GIN_root_dir)
