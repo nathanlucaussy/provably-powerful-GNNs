@@ -83,9 +83,9 @@ def test(model, test_set):
 
 def CV_10(model, dataset, config):
     #Partition dataset into 10 sets/chunks for Cross-Validation
-    num_epochs = config['epochs']
-    lr = config['lr']
-    print_freq = config['print_freq']
+    num_epochs = config.epochs
+    lr = config.lr
+    print_freq = config.print_freq
     num_parts = 10
     accuracy_sum = 0
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)

@@ -11,7 +11,6 @@ class ModelWrapper:
     curr_dir = os.path.dirname(__file__)
     data_dir = os.path.join(curr_dir, '../tg_datasets')
     models_path = os.path.join(curr_dir, '../models/other')
-    config = {} # Default config to be properly defined by child class
     model_dir = None
     
     def __init__(self, dataset, config):
@@ -19,12 +18,8 @@ class ModelWrapper:
                               dataset,
                               transform=self.transform_data,
                               use_node_attr=self.use_node_attr)
-        for key in config:
-            try:
-                self.config[key] = type(self.config[key])(config[key])
-            except KeyError:
-                print(f'Config key \'{key}\' is not valid for PPGN')
-                sys.exit()
+        for key, value in config.items():
+            setattr(self.config, key, value)
         
     # transform a torch_geometric.data.Data object to whatever format this model requires
     def transform_data(self, data):

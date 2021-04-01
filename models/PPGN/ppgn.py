@@ -8,8 +8,8 @@ class PPGN(nn.Module):
         self.new_suffix = True 
         block_features = [400, 400, 400]
         
-        node_labels = config['node_labels']
-        num_classes = config['num_classes']
+        node_labels = config.node_labels
+        num_classes = config.num_classes
         num_orig_features = node_labels + 1
 
 

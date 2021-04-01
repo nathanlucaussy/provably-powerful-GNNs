@@ -1,20 +1,23 @@
 from .model_wrapper import ModelWrapper
 from models import PPGN
 from utils import one_hot_to_ints, to_adj_mat_with_features
+from dataclasses import dataclass
 
 class PPGNWrapper(ModelWrapper):
     
-    config = {
-        'lr' : 0.0005,
-        'epochs': 100,
-        'print_freq': 20
-    }
+    @dataclass
+    class Config:
+        lr = 0.0005
+        epochs = 100
+        print_freq = 20
+        
+    config = Config()
     
     def __init__(self, dataset, config):
         super(PPGNWrapper, self).__init__(dataset, config)
         
-        self.config['node_labels'] = self.data.num_node_labels
-        self.config['num_classes'] = self.data.num_classes
+        self.config.node_labels = self.data.num_node_labels
+        self.config.num_classes = self.data.num_classes
         self.model = PPGN.ppgn.PPGN(self.config)                
      
     # transform a torch_geometric.data.Data object to the matrix needed for PPGN-style models and *graph label*
