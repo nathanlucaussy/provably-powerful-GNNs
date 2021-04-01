@@ -1,4 +1,3 @@
-import random
 import torch_geometric as tg
 import torch
 import torch.nn.functional as F

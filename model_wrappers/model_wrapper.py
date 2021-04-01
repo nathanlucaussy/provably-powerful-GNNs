@@ -1,9 +1,7 @@
 from torch_geometric.datasets import TUDataset
 import os
-import sys
 from urllib.request import urlopen
 from zipfile import ZipFile
-import importlib.util
 
 class ModelWrapper:
     
