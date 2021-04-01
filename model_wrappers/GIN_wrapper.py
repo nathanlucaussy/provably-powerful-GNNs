@@ -6,8 +6,6 @@ import sys
 import torch
 from dataclasses import dataclass
 
-#from models import GIN
-
 class GINWrapper(ModelWrapper):
     
     repo_url = 'https://github.com/weihua916/powerful-gnns/archive/refs/heads/master.zip'
