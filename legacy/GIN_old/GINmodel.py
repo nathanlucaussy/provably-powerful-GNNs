@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -54,10 +48,6 @@ class MLP(nn.Module):
                 h = F.relu(self.batch_norms[layer](self.linears[layer](h)))
             return self.linears[self.num_layers - 1](h)
         
-
-
-# In[2]:
-
 
 class GraphCNN(nn.Module):
     def __init__(self, input_dim, output_dim, device=0, num_layers=5, num_mlp_layers=2,  hidden_dim=64,  final_dropout = 0.5, learn_eps = False, graph_pooling_type = "sum", neighbor_pooling_type = "sum"):
@@ -278,9 +268,6 @@ class GraphCNN(nn.Module):
             score_over_layer += F.dropout(self.linears_prediction[layer](pooled_h), self.final_dropout, training = self.training)
 
         return score_over_layer
-
-
-# In[ ]:
 
 
 
