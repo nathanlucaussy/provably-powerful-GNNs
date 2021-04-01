@@ -1,8 +1,8 @@
-import random
 import torch_geometric as tg
 import torch
 import torch.nn.functional as F
 from random import shuffle
+from utils import cross_val_generator
 #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
@@ -80,38 +80,33 @@ def test(model, test_set):
         total += 1
     return(correct/total)
 
-def CV_10(model, dataset, num_epochs):
+def CV_10(model, dataset, config):
     #Partition dataset into 10 sets/chunks for Cross-Validation
-    CV_chunks = partition(dataset, 10)
+    num_epochs = config.epochs
+    lr = config.lr
+    print_freq = config.print_freq
+    num_parts = 10
     accuracy_sum = 0
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     model = model.to(device)
 
     #For each partition:
-    for test_chunk_index in range(len(CV_chunks)):
-        #build up the training and testing sets for CV (train_set is all sets)
-        train_chunks = []
-        for index in range(len(CV_chunks)):
-            if index == test_chunk_index:
-                test_chunk = CV_chunks[index]
-            #elif train_chunks is None:
-            #    train_chunks = CV_chunks[index]
-            else:
-                train_chunks += CV_chunks[index]
+    for test_idx, (train_chunks, test_chunk) in enumerate(cross_val_generator(dataset, num_parts)):
         #Train Model
-        for epoch in range(num_epochs):
-            print('epoch', epoch)
+        print(f'\nTraining using test chunk {test_idx+1}/{num_parts}')
+        for epoch in range(1, num_epochs + 1):
+            print(f'epoch: {epoch}/{num_epochs}')
             loss = epoch_train(model, train_chunks,  optimizer)
             #display results as the model is training
-            if epoch % (num_epochs // 30) == 0:
-                print('accuracy', test(model, test_chunk))
-                print('loss', loss)
+            if epoch % print_freq == 0:
+                print('accuracy:', test(model, test_chunk))
+                print('loss:', loss)
 
         #Test Model
         accuracy_sum += test(model, test_chunk)
-    return(accuracy_sum/5)
+    return(accuracy_sum / 10)
 
-def partition(dataset, num_parts):
+"""def partition(dataset, num_parts):
     N = len(dataset)
     part_size = N // num_parts
     mod = N % num_parts
@@ -129,5 +124,5 @@ def partition(dataset, num_parts):
         part_start = part_end
         count += 1
     
-    return partitions
+    return partitions"""
     
