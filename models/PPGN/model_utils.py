@@ -3,6 +3,7 @@ import torch_geometric as tg
 import torch
 import torch.nn.functional as F
 from random import shuffle
+from utils import cross_val_generator
 #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
@@ -86,24 +87,14 @@ def CV_10(model, dataset, config):
     lr = config['lr']
     print_freq = config['print_freq']
     num_parts = 10
-    CV_chunks = partition(dataset, num_parts)
     accuracy_sum = 0
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     model = model.to(device)
 
     #For each partition:
-    for test_chunk_index in range(num_parts):
-        #build up the training and testing sets for CV (train_set is all sets)
-        train_chunks = []
-        for index in range(num_parts):
-            if index == test_chunk_index:
-                test_chunk = CV_chunks[index]
-            #elif train_chunks is None:
-            #    train_chunks = CV_chunks[index]
-            else:
-                train_chunks += CV_chunks[index]
+    for test_idx, (train_chunks, test_chunk) in enumerate(cross_val_generator(dataset, num_parts)):
         #Train Model
-        print(f'\nTraining using test chunk {test_chunk_index+1}/{num_parts}')
+        print(f'\nTraining using test chunk {test_idx+1}/{num_parts}')
         for epoch in range(1, num_epochs + 1):
             print(f'epoch: {epoch}/{num_epochs}')
             loss = epoch_train(model, train_chunks,  optimizer)
@@ -116,7 +107,7 @@ def CV_10(model, dataset, config):
         accuracy_sum += test(model, test_chunk)
     return(accuracy_sum / 10)
 
-def partition(dataset, num_parts):
+"""def partition(dataset, num_parts):
     N = len(dataset)
     part_size = N // num_parts
     mod = N % num_parts
@@ -134,5 +125,5 @@ def partition(dataset, num_parts):
         part_start = part_end
         count += 1
     
-    return partitions
+    return partitions"""
     
