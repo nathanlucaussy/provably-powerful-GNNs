@@ -59,7 +59,7 @@ class GINWrapper(ModelWrapper):
             neighbors[j].append(i)
         degree_max = 0
         for i in range(num_nodes):
-            degree_max = max(len(list(nx_graph.neighbors(i))), degree_max) 
+            degree_max = max(len(neighbors[i]), degree_max) 
         
         g = S2VGraph(nx_graph, label, node_tags)
     
