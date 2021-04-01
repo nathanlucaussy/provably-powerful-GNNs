@@ -4,6 +4,7 @@ import networkx as nx
 import numpy as np
 import torch_geometric as tg
 from util_GIN import transform_tg_to_gin_data
+from DGCNN_utils import transform_tg_to_dgcnn_data
 
 #LIST OF DATASET NAMES
 dataset_names = ['MUTAG', 'PROTEINS']
@@ -15,6 +16,10 @@ def load_dataset(ds_name):
 #data loading function for GIN model
 def load_dataset_GIN(ds_name):
     return(tg.datasets.TUDataset('./tg_datasets/', ds_name, transform=transform_tg_to_gin_data, use_node_attr=True))
+
+#data loading function for DGCNN models
+def load_dataset_DGCNN(ds_name):
+    return(tg.datasets.TUDataset('./tg_datasets/', ds_name, transform=transform_tg_to_dgcnn_data, use_node_attr=True))
 
 #convert a tensor of one-hot vectors to a tensor of ints
 def one_hot_to_ints(tensor):
