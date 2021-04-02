@@ -44,12 +44,13 @@ class GINWrapper(ModelWrapper):
     def transform_data(self, data):
         edge_index = data.edge_index
         num_nodes = data.num_nodes
-        node_features = data.x
+        node_features = data.x.float()
         label = int(data.y[0])
         node_tags = one_hot_to_ints(data.x)
         nx_graph = nx.Graph()
         nx_graph.add_nodes_from(range(num_nodes))
-        nx_graph.add_edges_from(edge_index.transpose(0,1))
+        for u, v in edge_index.transpose(0,1):
+            nx_graph.add_edge(u.item(), v.item())
         
         neighbors = [[] for i in range(num_nodes)]
         for i, j in nx_graph.edges():
@@ -65,7 +66,6 @@ class GINWrapper(ModelWrapper):
         g.node_features = node_features
         g.edge_mat = edge_index
         g.max_neighbor = degree_max
-    
     
         return g
     
@@ -88,9 +88,9 @@ class GINWrapper(ModelWrapper):
         for train_graphs, test_graphs in cross_val_generator(graphs, 10):
             for epoch in range(1, conf.epochs + 1):
                 scheduler.step()
-        
-                avg_loss = self.GIN_main.train(conf, model, device, train_graphs, optimizer, epoch)
-                acc_train, acc_test = self.GIN_main.test(conf, model, device, train_graphs, test_graphs, epoch)
+
+                avg_loss = self.GIN_main.train(conf, model, device, list(train_graphs), optimizer, epoch)
+                acc_train, acc_test = self.GIN_main.test(conf, model, device, list(train_graphs), list(test_graphs), epoch)
                 acc_sum += acc_test
         
                 if not conf.filename == "":
