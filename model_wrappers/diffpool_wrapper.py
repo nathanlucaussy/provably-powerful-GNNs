@@ -33,7 +33,14 @@ class DiffPoolWrapper(ModelWrapper):
         #the default is 1000?
         num_epochs = 350
         batch_size = 32
+        num_workers = 1
         iters_per_epoch = 50
+        method = 'soft-assign'
+        clip=2.0
+        bmname = 'ENZYMES'
+        #number of classes
+        output_dim = 6
+        name_suffix = ''
         
         lr = 0.01
         filename = ''
@@ -80,9 +87,9 @@ class DiffPoolWrapper(ModelWrapper):
         # indexed from 0
         H = nx.relabel_nodes(G, mapping)
 
-        s = GraphSampler([H], normalize=False, max_num_nodes=1000, features='default')
+        #s = GraphSampler([H], normalize=False, max_num_nodes=1000, features='default')
 
-        return s[0]
+        return H
     
     def run(self):
         conf = self.config
@@ -91,21 +98,28 @@ class DiffPoolWrapper(ModelWrapper):
         graphs = self.data
         num_classes = self.data.num_classes
         output_dim = num_classes
-        input_dim = graphs[0]['feats'].shape[1]
+        #input_dim = graphs[0]['feats'].shape[1]
 
-        model = self.DiffPool_main.encoders.SoftPoolingGcnEncoder(
-                    conf.max_nodes, 
-                    input_dim, conf.hidden_dim, output_dim, num_classes, conf.num_gc_layers,
-                    conf.hidden_dim, assign_ratio=conf.assign_ratio, num_pooling=conf.num_pool,
-                    bn=conf.bn, dropout=0.0, linkpred=conf.linkpred, args=conf,
-                    assign_input_dim=-1).to(device)
+
+        
         
 
     
 
         all_vals = []
-        for train_graphs, test_graphs in cross_val_generator(graphs, 10):
-            _, val_accs = self.DiffPool_main.train(train_graphs, model, conf, val_dataset=None, test_dataset=test_graphs, writer=None)
+        for i in range(10):
+
+            train_dataset, val_dataset, max_num_nodes, input_dim, assign_input_dim = \
+            prepare_val_data(graphs, conf, i, max_nodes=conf.max_nodes)
+
+            model = self.DiffPool_main.encoders.SoftPoolingGcnEncoder(
+                    conf.max_nodes, 
+                    input_dim, conf.hidden_dim, output_dim, num_classes, conf.num_gc_layers,
+                    conf.hidden_dim, assign_ratio=conf.assign_ratio, num_pooling=conf.num_pool,
+                    bn=conf.bn, dropout=0.0, linkpred=conf.linkpred, args=conf,
+                    assign_input_dim=assign_input_dim).to(device)
+
+            _, val_accs = self.DiffPool_main.train(train_dataset, model, conf, val_dataset=val_dataset, test_dataset=None, writer=None)
             all_vals.append(np.array(val_accs))
 
 
@@ -116,8 +130,46 @@ class DiffPoolWrapper(ModelWrapper):
         print(np.max(all_vals))
         print(np.argmax(all_vals))
         return all_vals
-        
+
+def prepare_val_data(graphs, args, val_idx, max_nodes=0):
+
+    #random.shuffle(graphs)
+    val_size = len(graphs) // 10
+    train_graphs = graphs[:val_idx * val_size]
+    if val_idx < 9:
+        train_graphs = train_graphs + graphs[(val_idx+1) * val_size :]
+    val_graphs = graphs[val_idx*val_size: (val_idx+1)*val_size]
+    print('Num training graphs: ', len(train_graphs), 
+          '; Num validation graphs: ', len(val_graphs))
+
+    print('Number of graphs: ', len(graphs))
+    print('Number of edges: ', sum([G.number_of_edges() for G in graphs]))
+    print('Max, avg, std of graph size: ', 
+            max([G.number_of_nodes() for G in graphs]), ', '
+            "{0:.2f}".format(np.mean([G.number_of_nodes() for G in graphs])), ', '
+            "{0:.2f}".format(np.std([G.number_of_nodes() for G in graphs])))
+
+    # minibatch
+    dataset_sampler = GraphSampler(train_graphs, normalize=False, max_num_nodes=max_nodes,
+            features='default')
+    train_dataset_loader = torch.utils.data.DataLoader(
+            dataset_sampler, 
+            batch_size=32, 
+            shuffle=True,
+            num_workers=1)
+
+    dataset_sampler = GraphSampler(val_graphs, normalize=False, max_num_nodes=max_nodes,
+            features='default')
+    val_dataset_loader = torch.utils.data.DataLoader(
+            dataset_sampler, 
+            batch_size=32, 
+            shuffle=False,
+            num_workers=1)
+
+    return train_dataset_loader, val_dataset_loader, \
+            dataset_sampler.max_num_nodes, dataset_sampler.feat_dim, dataset_sampler.assign_feat_dim        
     
+
 # this is their code
 class GraphSampler(torch.utils.data.Dataset):
     ''' Sample graphs and nodes in graph
@@ -218,8 +270,8 @@ class GraphSampler(torch.utils.data.Dataset):
 
         # use all nodes for aggregation (baseline)
 
-        return {'adj':torch.tensor([adj_padded]),
-                'feats':torch.tensor([self.feature_all[idx].copy()]),
-                'label':torch.tensor([self.label_all[idx]]),
-                'num_nodes': torch.tensor([num_nodes]),
+        return {'adj':torch.tensor(adj_padded),
+                'feats':torch.tensor(self.feature_all[idx].copy()),
+                'label':torch.tensor(self.label_all[idx]),
+                'num_nodes': torch.tensor(num_nodes),
                 'assign_feats':torch.tensor(self.assign_feat_all[idx].copy())}
