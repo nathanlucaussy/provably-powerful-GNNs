@@ -4,7 +4,8 @@ from model_wrappers import *
 
 models = {
     'PPGN' : PPGNWrapper,
-    'GIN' : GINWrapper
+    'GIN' : GINWrapper,
+    'DiffPool' : DiffPoolWrapper
 }
 
 datasets = [
