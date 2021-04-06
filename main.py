@@ -5,7 +5,8 @@ from model_wrappers import *
 models = {
     'PPGN' : PPGNWrapper,
     'GIN' : GINWrapper,
-    'DGCNN' : DGCNNWrapper
+    'DGCNN' : DGCNNWrapper,
+    'DiffPool' : DiffPoolWrapper
 }
 
 datasets = [
