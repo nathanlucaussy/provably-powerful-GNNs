@@ -46,7 +46,7 @@ class PPGNWrapper(ModelWrapper):
     def run(self):
         if self.config.param_search:
             lr, decay, acc = PPGN.model_utils.param_search(self.model, self.data, self.config)
-            print('\nPARAMETER SEARCH COMPLETE. ACHIEVED BEST ACCURACY OF {acc} with lr={lr}, decay={decay}')
+            print(f'\nPARAMETER SEARCH COMPLETE. ACHIEVED BEST ACCURACY OF {acc} with lr={lr}, decay={decay}')
             return acc
         else:
             acc = PPGN.model_utils.CV_10(self.model, self.data, self.config)
