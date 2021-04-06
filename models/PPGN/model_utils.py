@@ -86,11 +86,11 @@ def CV_10(model_class, dataset, config):
     #For each partition:
     for test_idx, (train_chunks, test_chunk) in enumerate(cross_val_generator(dataset, num_parts)):
         #Train Model
-        train_loader = tg.data.DataLoader(train_set, batch_size=config.batch_size, shuffle=True)
+        train_loader = tg.data.DataLoader(train_chunks, batch_size=config.batch_size, shuffle=True)
         print(f'\nTraining using test chunk {test_idx+1}/{num_parts}')
         for epoch in range(1, num_epochs + 1):
             print(f'epoch: {epoch}/{num_epochs}')
-            loss = epoch_train(model, train_chunks, optimizer, scheduler)
+            loss = epoch_train(model, train_loader, optimizer, scheduler)
             #display results as the model is training
             if epoch % print_freq == 0:
                 print('accuracy:', test(model, test_chunk))
@@ -99,4 +99,5 @@ def CV_10(model_class, dataset, config):
         #Test Model
         accuracy_sum += test(model, test_chunk)
     return(accuracy_sum / 10)
+
 
