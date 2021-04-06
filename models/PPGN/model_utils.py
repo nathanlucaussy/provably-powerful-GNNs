@@ -8,7 +8,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
 decay_parameters = [0.5, 1]
 
-def epoch_train(model, train_set, optimizer):
+def epoch_train(model, train_set, optimizer, scheduler):
     model.train()
     loader = tg.data.DataLoader(train_set, batch_size=1, shuffle=True)
     loss_sum = 0
@@ -25,6 +25,7 @@ def epoch_train(model, train_set, optimizer):
         loss.backward()
 
         optimizer.step()
+        scheduler.step()
         loss_sum += loss.item()
         count += 1
     #return loss normalised for number of batches
@@ -56,7 +57,7 @@ def parameter_search(model, num_epochs, dataset, verbose=False):
             #train model on those params
             print("Training: start - lr: " + str(lr) + ' decay: '+str(decay))
             for epoch in range(num_epochs):
-                epoch_loss = epoch_train(model, train_set, optimizer)
+                epoch_loss = epoch_train(model, train_set, optimizer, scheduler)
                 if verbose:
                     print("Epoch: " + str(epoch) + " Loss: " + str(epoch_loss))
             print("End-training")
@@ -83,11 +84,11 @@ def test(model, test_set):
 def CV_10(model, dataset, config):
     #Partition dataset into 10 sets/chunks for Cross-Validation
     num_epochs = config.epochs
-    lr = config.lr
     print_freq = config.print_freq
     num_parts = 10
     accuracy_sum = 0
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma=config.decay, step_size=20)
     model = model.to(device)
 
     #For each partition:
@@ -96,7 +97,7 @@ def CV_10(model, dataset, config):
         print(f'\nTraining using test chunk {test_idx+1}/{num_parts}')
         for epoch in range(1, num_epochs + 1):
             print(f'epoch: {epoch}/{num_epochs}')
-            loss = epoch_train(model, train_chunks,  optimizer)
+            loss = epoch_train(model, train_chunks, optimizer, scheduler)
             #display results as the model is training
             if epoch % print_freq == 0:
                 print('accuracy:', test(model, test_chunk))
