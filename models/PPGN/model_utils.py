@@ -1,7 +1,7 @@
 import torch_geometric as tg
 import torch
 import torch.nn.functional as F
-from random import shuffle
+from random import sample
 from utils import cross_val_generator
 #optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -31,55 +31,62 @@ def epoch_train(model, train_set, optimizer, scheduler):
     #return loss normalised for number of batches
     return (loss_sum/count)
 
+def validate(model, val_set):
+    model.eval()
+    
+
 def train(model, train_set, num_epochs, optimizer, verbose=False):
     for epoch in range(num_epochs):
         epoch_loss = epoch_train(model, train_set, optimizer)
         if verbose:
             print("Epoch: " +str(epoch) + " Loss: " + str(epoch_loss))
 
-def parameter_search(model, num_epochs, dataset, verbose=False):
+def param_search(model, dataset, config):
+    model = model.to(config.device)
     #split data into training and validation sets:
-    shuffled_dataset = dataset
-    shuffle(shuffled_dataset)
+    shuffled_dataset = sample(list(dataset), len(dataset))
+    #shuffle(shuffled_dataset)
     split_point = len(dataset) // 9
     train_set = shuffled_dataset[:split_point]
-    validation_set = shuffled_dataset[split_point:]
+    val_set = shuffled_dataset[split_point:]
 
-    #results stored in a dictionary indexed by parameters
-    results_dict = dict()
+    best_params = (None, None)
+    best_acc = 0
 
     #train & validate model on each combination of parameters
     for lr in lr_parameters:
-        results_dict[lr] = dict()
         for decay in decay_parameters:
             optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-            scheduler = torch.optim.lr_scheduler.StepLR(optimizer, decay, step_size=20, last_epoch=-1, verbose=False)
+            scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma=config.decay, step_size=20)
             #train model on those params
-            print("Training: start - lr: " + str(lr) + ' decay: '+str(decay))
-            for epoch in range(num_epochs):
-                epoch_loss = epoch_train(model, train_set, optimizer, scheduler)
-                if verbose:
+            print(f'Training: start - lr: {lr}, decay: {decay}')
+            for epoch in range(config.epochs):
+                epoch_loss = epoch_train(model, train_set, optimizer, scheduler)                
+                if config.verbose:
                     print("Epoch: " + str(epoch) + " Loss: " + str(epoch_loss))
             print("End-training")
 
             #validate model on those params
-            accuracy = test(model, validation_set)
-            results_dict[lr][decay] = accuracy
-    return results_dict
+            accuracy = test(model, val_set)
+            if accuracy > best_acc:
+                best_acc = accuracy
+                best_params = (lr, decay)
+    return *best_params, best_acc
 
 def test(model, test_set):
-    correct = 0
-    total = 0
-    #basic testing: check if out matches y label
-    for X, y in test_set:
-        X = X.to(device)
-        out = model(torch.unsqueeze(X, 0))
-        #if ((data.y[0].item() == 1 and out[0].item() > 0.0)
-        #    or (data.y[0].item() == -1 and out[0].item() <= 0.0)):
-        if int(torch.argmax(out, 1)) == int(y):
-            correct += 1
-        total += 1
-    return(correct/total)
+    with torch.no_grad():
+        correct = 0
+        total = 0
+        #basic testing: check if out matches y label
+        for X, y in test_set:
+            X = X.to(device)
+            out = model(torch.unsqueeze(X, 0))
+            #if ((data.y[0].item() == 1 and out[0].item() > 0.0)
+            #    or (data.y[0].item() == -1 and out[0].item() <= 0.0)):
+            if int(torch.argmax(out, 1)) == int(y):
+                correct += 1
+            total += 1
+        return(correct/total)
 
 def CV_10(model, dataset, config):
     #Partition dataset into 10 sets/chunks for Cross-Validation

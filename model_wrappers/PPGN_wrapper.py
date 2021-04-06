@@ -16,6 +16,7 @@ class PPGNWrapper(ModelWrapper):
         epochs = 100
         print_freq = 20
         param_search = False
+        verbose = False
         
     config = Config()
     
@@ -44,6 +45,11 @@ class PPGNWrapper(ModelWrapper):
                 graph_label))
     
     def run(self):
-        accuracy = PPGN.model_utils.CV_10(self.model, self.data, self.config)
-        return accuracy
+        if self.config.param_search:
+            lr, decay, acc = PPGN.model_utils.param_search(self.model, self.data, self.config)
+            print('\nPARAMETER SEARCH COMPLETE. ACHIEVED BEST ACCURACY OF {acc} with lr={lr}, decay={decay}')
+            return acc
+        else:
+            acc = PPGN.model_utils.CV_10(self.model, self.data, self.config)
+        return acc
     
