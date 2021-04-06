@@ -21,14 +21,13 @@ class PPGNWrapper(ModelWrapper):
     config = Config()
     
     def __init__(self, dataset, config):
-        super(PPGNWrapper, self).__init__(dataset, config)
-        
-        self.config.node_labels = self.data.num_node_labels
-        self.config.num_classes = self.data.num_classes
         if dataset in self.LEARNING_RATES:
             self.config.lr = self.LEARNING_RATES[dataset]
             self.config.decay = self.DECAY_RATES[dataset]
             self.config.epochs = self.EPOCHS[dataset]
+        super(PPGNWrapper, self).__init__(dataset, config)
+        self.config.node_labels = self.data.num_node_labels
+        self.config.num_classes = self.data.num_classes
         self.model = PPGN.ppgn.PPGN(self.config)                
      
     # transform a torch_geometric.data.Data object to the matrix needed for PPGN-style models and *graph label*
