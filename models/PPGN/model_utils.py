@@ -3,7 +3,6 @@ import torch
 import torch.nn.functional as F
 from random import sample
 from utils import cross_val_generator
-#optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
 decay_parameters = [0.5, 1]
@@ -30,21 +29,10 @@ def epoch_train(model, train_loader, optimizer, scheduler):
     #return loss normalised for number of batches
     return (loss_sum/count)
 
-def validate(model, val_set):
-    model.eval()
-    
-
-def train(model, train_set, num_epochs, optimizer, verbose=False):
-    for epoch in range(num_epochs):
-        epoch_loss = epoch_train(model, train_set, optimizer)
-        if verbose:
-            print("Epoch: " +str(epoch) + " Loss: " + str(epoch_loss))
-
 def param_search(model_class, dataset, config):
     model = model_class(config).to(device)
     #split data into training and validation sets:
     shuffled_dataset = sample(list(dataset), len(dataset))
-    #shuffle(shuffled_dataset)
     split_point = len(dataset) // 9
     train_set = shuffled_dataset[:split_point]
     val_set = shuffled_dataset[split_point:]
@@ -80,8 +68,6 @@ def test(model, test_set):
         for X, y in test_set:
             X = X.to(device)
             out = model(torch.unsqueeze(X, 0))
-            #if ((data.y[0].item() == 1 and out[0].item() > 0.0)
-            #    or (data.y[0].item() == -1 and out[0].item() <= 0.0)):
             if int(torch.argmax(out, 1)) == int(y):
                 correct += 1
             total += 1
@@ -114,23 +100,3 @@ def CV_10(model_class, dataset, config):
         accuracy_sum += test(model, test_chunk)
     return(accuracy_sum / 10)
 
-"""def partition(dataset, num_parts):
-    N = len(dataset)
-    part_size = N // num_parts
-    mod = N % num_parts
-    partitions = []
-    count = 0
-    part_start = 0
-    while count < mod:
-        part_end = part_start + part_size + 1
-        partitions.append(dataset[part_start:part_end])
-        part_start = part_end
-        count += 1
-    while count < num_parts:
-        part_end = part_start + part_size
-        partitions.append(dataset[part_start:part_end])
-        part_start = part_end
-        count += 1
-    
-    return partitions"""
-    
