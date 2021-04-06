@@ -5,11 +5,17 @@ from dataclasses import dataclass
 
 class PPGNWrapper(ModelWrapper):
     
+    LEARNING_RATES = {'COLLAB': 0.0001, 'IMDBBINARY': 0.00005, 'IMDBMULTI': 0.0001, 'MUTAG': 0.0001, 'NCI1':0.0001, 'NCI109':0.0001, 'PROTEINS': 0.001, 'PTC': 0.0001}
+    DECAY_RATES = {'COLLAB': 0.5, 'IMDBBINARY': 0.5, 'IMDBMULTI': 0.75, 'MUTAG': 1.0, 'NCI1':0.75, 'NCI109':0.75, 'PROTEINS': 0.5, 'PTC': 1.0}
+    EPOCHS = {'COLLAB': 150, 'IMDBBINARY': 100, 'IMDBMULTI': 150, 'MUTAG': 500, 'NCI1': 200, 'NCI109': 250, 'PROTEINS': 100, 'PTC': 400}
+    
     @dataclass
     class Config:
-        lr = 0.0005
+        lr = 0.0001
+        decay = 0.5
         epochs = 100
         print_freq = 20
+        param_search = False
         
     config = Config()
     
@@ -18,6 +24,10 @@ class PPGNWrapper(ModelWrapper):
         
         self.config.node_labels = self.data.num_node_labels
         self.config.num_classes = self.data.num_classes
+        if dataset in self.LEARNING_RATES:
+            self.config.lr = self.LEARNING_RATES[dataset]
+            self.config.decay = self.DECAY_RATES[dataset]
+            self.config.epochs = self.EPOCHS[dataset]
         self.model = PPGN.ppgn.PPGN(self.config)                
      
     # transform a torch_geometric.data.Data object to the matrix needed for PPGN-style models and *graph label*
