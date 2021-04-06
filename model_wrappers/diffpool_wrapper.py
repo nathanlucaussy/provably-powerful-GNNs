@@ -272,6 +272,6 @@ class GraphSampler(torch.utils.data.Dataset):
 
         return {'adj':torch.tensor(adj_padded),
                 'feats':torch.tensor(self.feature_all[idx].copy()),
-                'label':torch.tensor(self.label_all[idx]),
+                'label': self.label_all[idx].clone().detach(),
                 'num_nodes': torch.tensor(num_nodes),
                 'assign_feats':torch.tensor(self.assign_feat_all[idx].copy())}
