@@ -63,11 +63,11 @@ def param_search(model_class, dataset, config):
             for epoch in range(config.epochs):
                 epoch_loss = epoch_train(model, train_set, optimizer, scheduler)                
                 if config.verbose:
-                    print("Epoch: " + str(epoch) + " Loss: " + str(epoch_loss))
-            print("End-training")
+                    print(f'Epoch: {epoch}, Loss: {epoch_loss}')
 
             #validate model on those params
             accuracy = test(model, val_set)
+            print(f'Achieved test accuracy of {accuracy} with lr={lr}, decay={decay}')
             if accuracy > best_acc:
                 best_acc = accuracy
                 best_params = (lr, decay)
