@@ -15,6 +15,7 @@ class PPGNWrapper(ModelWrapper):
         decay = 0.5
         epochs = 100
         print_freq = 20
+        batch_size = 1
         param_search = False
         verbose = False
         

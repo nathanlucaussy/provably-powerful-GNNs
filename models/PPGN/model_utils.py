@@ -8,12 +8,11 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
 decay_parameters = [0.5, 1]
 
-def epoch_train(model, train_set, optimizer, scheduler):
+def epoch_train(model, train_loader, optimizer, scheduler):
     model.train()
-    loader = tg.data.DataLoader(train_set, batch_size=1, shuffle=True)
     loss_sum = 0
     count = 0
-    for X, y in loader:
+    for X, y in train_loader:
 
         X = X.to(device)
         y = y.to(device)
@@ -49,7 +48,7 @@ def param_search(model_class, dataset, config):
     split_point = len(dataset) // 9
     train_set = shuffled_dataset[:split_point]
     val_set = shuffled_dataset[split_point:]
-
+    train_loader = tg.data.DataLoader(train_set, batch_size=config.batch_size, shuffle=True)
     best_params = (None, None)
     best_acc = 0
 
@@ -61,7 +60,7 @@ def param_search(model_class, dataset, config):
             #train model on those params
             print(f'Training: start - lr: {lr}, decay: {decay}')
             for epoch in range(config.epochs):
-                epoch_loss = epoch_train(model, train_set, optimizer, scheduler)                
+                epoch_loss = epoch_train(model, train_loader, optimizer, scheduler)                
                 if config.verbose:
                     print(f'Epoch: {epoch}, Loss: {epoch_loss}')
 
@@ -101,6 +100,7 @@ def CV_10(model_class, dataset, config):
     #For each partition:
     for test_idx, (train_chunks, test_chunk) in enumerate(cross_val_generator(dataset, num_parts)):
         #Train Model
+        train_loader = tg.data.DataLoader(train_set, batch_size=config.batch_size, shuffle=True)
         print(f'\nTraining using test chunk {test_idx+1}/{num_parts}')
         for epoch in range(1, num_epochs + 1):
             print(f'epoch: {epoch}/{num_epochs}')
