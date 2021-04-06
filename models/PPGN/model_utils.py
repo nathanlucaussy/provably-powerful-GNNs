@@ -41,8 +41,8 @@ def train(model, train_set, num_epochs, optimizer, verbose=False):
         if verbose:
             print("Epoch: " +str(epoch) + " Loss: " + str(epoch_loss))
 
-def param_search(model, dataset, config):
-    model = model.to(config.device)
+def param_search(model_class, dataset, config):
+    model = model_class(config).to(device)
     #split data into training and validation sets:
     shuffled_dataset = sample(list(dataset), len(dataset))
     #shuffle(shuffled_dataset)
@@ -88,15 +88,15 @@ def test(model, test_set):
             total += 1
         return(correct/total)
 
-def CV_10(model, dataset, config):
+def CV_10(model_class, dataset, config):
     #Partition dataset into 10 sets/chunks for Cross-Validation
     num_epochs = config.epochs
     print_freq = config.print_freq
     num_parts = 10
     accuracy_sum = 0
+    model = model_class(config).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma=config.decay, step_size=20)
-    model = model.to(device)
 
     #For each partition:
     for test_idx, (train_chunks, test_chunk) in enumerate(cross_val_generator(dataset, num_parts)):

@@ -28,7 +28,7 @@ class PPGNWrapper(ModelWrapper):
         super(PPGNWrapper, self).__init__(dataset, config)
         self.config.node_labels = self.data.num_node_labels
         self.config.num_classes = self.data.num_classes
-        self.model = PPGN.ppgn.PPGN(self.config)                
+        self.model = PPGN.ppgn.PPGN
      
     # transform a torch_geometric.data.Data object to the matrix needed for PPGN-style models and *graph label*
     def transform_data(self, data):
