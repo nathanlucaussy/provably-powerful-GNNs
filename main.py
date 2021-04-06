@@ -8,7 +8,8 @@ models = {
 }
 
 datasets = [
-    'MUTAG'
+    'MUTAG', 
+    'QM9'
 ]
 
 def main():

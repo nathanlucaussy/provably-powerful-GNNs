@@ -1,4 +1,4 @@
-from torch_geometric.datasets import TUDataset
+from torch_geometric.datasets import TUDataset, QM9
 import os
 import sys
 from urllib.request import urlopen
@@ -13,10 +13,17 @@ class ModelWrapper:
     model_dir = None
     
     def __init__(self, dataset, config):
-        self.data = TUDataset(self.data_dir,
-                              dataset,
-                              transform=self.transform_data,
-                              use_node_attr=self.use_node_attr)
+        self.qm9 = False
+        if dataset == "QM9":
+            self.qm9 = True
+            self.data_dir = os.path.join(self.curr_dir, '../tg_datasets/QM9')
+            self.data = QM9(self.data_dir,
+                            transform=self.transform_data)
+        else:
+            self.data = TUDataset(self.data_dir,
+                                  dataset,
+                                  transform=self.transform_data,
+                                  use_node_attr=self.use_node_attr)
         for key, value in config.items():
             if hasattr(self.config, key):
                 setattr(self.config, key, type(getattr(self.config, key))(value))
