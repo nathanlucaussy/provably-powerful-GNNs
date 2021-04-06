@@ -100,12 +100,6 @@ class DiffPoolWrapper(ModelWrapper):
         output_dim = num_classes
         #input_dim = graphs[0]['feats'].shape[1]
 
-
-        
-        
-
-    
-
         all_vals = []
         for i in range(10):
 
@@ -121,8 +115,6 @@ class DiffPoolWrapper(ModelWrapper):
 
             _, val_accs = self.DiffPool_main.train(train_dataset, model, conf, val_dataset=val_dataset, test_dataset=None, writer=None)
             all_vals.append(np.array(val_accs))
-
-
         
         all_vals = np.vstack(all_vals)
         all_vals = np.mean(all_vals, axis=0)
