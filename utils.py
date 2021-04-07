@@ -85,14 +85,8 @@ def partition(dataset, num_parts):
     return partitions
 
 def mean_and_std(train_set):
-    X, labels = train_set[0]
-    num_labels = labels.shape[1]
-    train_labels = np.zeros(shape=(len(train_set), num_labels))
-
-    for i, (X, labels) in enumerate(train_set):
-        train_labels[i] = labels
-        
-    train_labels_mean = train_labels.mean(axis=0)
-    train_labels_std = train_labels.std(axis=0)
+    all_labels = torch.cat([train_set.get(i).y for i in range(len(train_set))], dim=0)
+    train_labels_mean = all_labels.mean(0)
+    train_labels_std = all_labels.std(0)
 
     return train_labels_mean, train_labels_std
