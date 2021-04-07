@@ -1,24 +1,31 @@
 import torch_geometric as tg
 import torch
 import torch.nn.functional as F
-from random import sample
-from utils import cross_val_generator
+from utils import cross_val_generator, mean_and_std
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
 decay_parameters = [0.5, 1]
 
-def epoch_train(model, train_loader, optimizer, scheduler):
+def epoch_train(model, train_loader, optimizer, scheduler, regression=False, mean=None, std=None):
     model.train()
     loss_sum = 0
     count = 0
     for X, y in train_loader:
 
         X = X.to(device)
+
+        # normalize y if mean and std were given
+        if mean is not None and std is not None:
+            y = (y - mean) / std
         y = y.to(device)
         optimizer.zero_grad()
         
         out = model(X)
-        loss = F.cross_entropy(out, y, reduction='sum')
+        if regression:
+            differences = (out-y).abs().sum(dim=0)
+            loss = differences.sum()
+        else:
+            loss = F.cross_entropy(out, y, reduction='sum')
 
         loss.backward()
 
@@ -32,10 +39,10 @@ def epoch_train(model, train_loader, optimizer, scheduler):
 def param_search(model_class, dataset, config):
     model = model_class(config).to(device)
     #split data into training and validation sets:
-    shuffled_dataset = sample(list(dataset), len(dataset))
+    dataset.shuffle()
     split_point = len(dataset) // 9
-    train_set = shuffled_dataset[:split_point]
-    val_set = shuffled_dataset[split_point:]
+    train_set = dataset[split_point:]
+    val_set = dataset[:split_point]
     train_loader = tg.data.DataLoader(train_set, batch_size=config.batch_size, shuffle=True)
     best_params = (None, None)
     best_acc = 0
@@ -60,18 +67,32 @@ def param_search(model_class, dataset, config):
                 best_params = (lr, decay)
     return *best_params, best_acc
 
-def test(model, test_set):
+def test(model, test_set, regression=False, mean=None, std=None):
     with torch.no_grad():
         correct = 0
         total = 0
+        errors = 0
         #basic testing: check if out matches y label
         for X, y in test_set:
             X = X.to(device)
-            out = model(torch.unsqueeze(X, 0))
-            if int(torch.argmax(out, 1)) == int(y):
-                correct += 1
+    
+            out = model(torch.unsqueeze(X, 0)).cpu()
+            if mean is not None and std is not None:
+                out = out * torch.from_numpy(std) + torch.from_numpy(mean)
+    
+            #if ((data.y[0].item() == 1 and out[0].item() > 0.0)
+            #    or (data.y[0].item() == -1 and out[0].item() <= 0.0)):
+            if regression:
+                errors += (out-y).abs().sum(dim=0).detach().numpy()
+            else:
+                if int(torch.argmax(out, 1)) == int(y):
+                    correct += 1
             total += 1
-        return(correct/total)
+                
+        if regression:
+            return (errors / total)
+        else:
+            return(correct / total)
 
 def CV_10(model_class, dataset, config):
     #Partition dataset into 10 sets/chunks for Cross-Validation
@@ -90,14 +111,47 @@ def CV_10(model_class, dataset, config):
         print(f'\nTraining using test chunk {test_idx+1}/{num_parts}')
         for epoch in range(1, num_epochs + 1):
             print(f'epoch: {epoch}/{num_epochs}')
-            loss = epoch_train(model, train_loader, optimizer, scheduler)
+            loss = epoch_train(model, train_loader, optimizer, scheduler, regression=config.qm9)
             #display results as the model is training
             if epoch % print_freq == 0:
-                print('accuracy:', test(model, test_chunk))
+                print('accuracy:', test(model, test_chunk, config.qm9))
                 print('loss:', loss)
 
         #Test Model
-        accuracy_sum += test(model, test_chunk)
+        accuracy_sum += test(model, test_chunk, config.qm9)
     return(accuracy_sum / 10)
 
+
+def CV_regression(model_class, dataset, config):
+    num_epochs = config.epochs
+    lr = config.lr
+    print_freq = config.print_freq
+    model = model_class(config).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma=config.decay, step_size=20)
+
+    #Partition dataset into train / test set
+    dataset.shuffle()
+    len_test_set = int(len(dataset) / 10)
+    test_set = dataset[:len_test_set]
+    train_set = dataset[len_test_set:]
+    
+    train_labels_mean, train_labels_std = mean_and_std(train_set)
+    
+    train_loader = tg.data.DataLoader(train_set, batch_size=config.batch_size, shuffle=True)
+
+    for epoch in range(1, num_epochs + 1):
+        print(f'epoch: {epoch}/{num_epochs}')
+        loss = epoch_train(model, train_loader, optimizer, scheduler,
+                           regression=True, mean=train_labels_mean, std=train_labels_std)
+        #display results as the model is training
+        if epoch % print_freq == 0:
+            print('error:', test(model, test_set, regression=True, 
+                                 mean=train_labels_mean, std=train_labels_std))
+            print('loss:', loss)
+
+    #Test Model
+    test_error = test(model, test_set, regression=True, 
+                      mean=train_labels_mean, std=train_labels_std)
+    return test_error
 

@@ -8,9 +8,8 @@ class PPGN(nn.Module):
         self.new_suffix = True 
         block_features = [400, 400, 400]
         
-        node_labels = config.node_labels
-        num_classes = config.num_classes
-        num_orig_features = node_labels + 1
+        num_orig_features = config.input_size
+        output_size = config.output_size
 
 
         prev_layer_features = num_orig_features
@@ -22,11 +21,11 @@ class PPGN(nn.Module):
         self.fc_layers = nn.ModuleList()
         if self.new_suffix:
             for out_features in block_features:
-                self.fc_layers.append(FullyConnected(2*out_features, num_classes, activation=None))
+                self.fc_layers.append(FullyConnected(2*out_features, output_size, activation=None))
         else:
             self.fc_layers.append(FullyConnected(2*block_features[-1], 512))
             self.fc_layers.append(FullyConnected(512, 256))
-            self.fc_layers.append(FullyConnected(256, num_classes, activation=None))
+            self.fc_layers.append(FullyConnected(256, output_size, activation=None))
 
     def forward(self, x):
         scores = torch.tensor(0, device=x.device, dtype=x.dtype)
