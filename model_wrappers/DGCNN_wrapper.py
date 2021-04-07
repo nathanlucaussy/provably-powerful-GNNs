@@ -48,7 +48,12 @@ class DGCNNWrapper(ModelWrapper):
         # node_features = np.array(data.x.float())
         node_features = None
         label = int(data.y[0])
-        node_tags = torch.squeeze(one_hot_to_ints(data.x).to(dtype=torch.long))
+
+        if data.x is not None: 
+            node_tags = torch.squeeze(one_hot_to_ints(data.x).to(dtype=torch.long))
+        else:
+            ones = torch.ones(size=(num_nodes, 1))
+            node_tags = torch.squeeze(ones.to(dtype=torch.long))
 
         nx_graph = nx.Graph()
         nx_graph.add_nodes_from(range(num_nodes))

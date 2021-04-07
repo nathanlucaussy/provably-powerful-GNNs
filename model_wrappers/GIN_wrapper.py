@@ -44,9 +44,15 @@ class GINWrapper(ModelWrapper):
     def transform_data(self, data):
         edge_index = data.edge_index
         num_nodes = data.num_nodes
-        node_features = data.x.float()
+
+        if data.x is not None:
+            node_features = data.x.float()
+        else:
+            node_features = torch.ones((num_nodes, 1)).float()
+
+        node_tags = one_hot_to_ints(node_features)
         label = int(data.y[0])
-        node_tags = one_hot_to_ints(data.x)
+
         nx_graph = nx.Graph()
         nx_graph.add_nodes_from(range(num_nodes))
         for u, v in edge_index.transpose(0,1):
