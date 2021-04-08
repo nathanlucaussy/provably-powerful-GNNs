@@ -87,7 +87,7 @@ def test(model, test_set, regression=False, mean=None, std=None):
             #if ((data.y[0].item() == 1 and out[0].item() > 0.0)
             #    or (data.y[0].item() == -1 and out[0].item() <= 0.0)):
             if regression:
-                correct_or_dists += (out-y).abs().sum(dim=0).detach().cpu().numpy()
+                correct_or_dists += (out-y).abs().sum(dim=0).detach().cpu()
             else:
                 if int(torch.argmax(out, 1)) == int(y):
                     correct_or_dists += 1
@@ -103,14 +103,13 @@ def CV_10(model_class, dataset, config):
     print_freq = config.print_freq
     num_parts = 10
     accuracy_sum = 0
-    
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma=config.decay, step_size=20)
 
     #For each partition:
     for test_idx, (train_chunks, test_chunk) in enumerate(cross_val_generator(dataset, num_parts)):
         #Train Model
         model = model_class(config).to(device)
+        optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma=config.decay, step_size=20)
         train_batches = get_batches(train_chunks, config.batch_size)
         #train_loader = tg.data.DataLoader(train_chunks, batch_size=config.batch_size, shuffle=True)
         print(f'\nTraining using test chunk {test_idx+1}/{num_parts}')
