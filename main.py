@@ -8,7 +8,8 @@ models = {
     'PPGN' : PPGNWrapper,
     'GIN' : GINWrapper,
     'DGCNN' : DGCNNWrapper,
-    'DiffPool' : DiffPoolWrapper
+    'DiffPool' : DiffPoolWrapper,
+    'PPGNNew' : PPGNNewDataFormatWrapper
 }
 
 datasets = [
