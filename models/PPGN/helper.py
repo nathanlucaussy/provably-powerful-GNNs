@@ -66,16 +66,3 @@ def split_to_batches(graphs, batch_size):
     # ret2[:] = r_labels
     # return ret1, ret2
 
-def normalize_graph(curr_graph):
-
-    split = np.split(curr_graph, [1], axis=2)
-
-    adj = np.squeeze(split[0], axis=2)
-    deg = np.sqrt(np.sum(adj, 0))
-    deg = np.divide(1., deg, out=np.zeros_like(deg), where=deg!=0)
-    normal = np.diag(deg)
-    norm_adj = np.expand_dims(np.matmul(np.matmul(normal, adj), normal), axis=2)
-    ones = np.ones(shape=(curr_graph.shape[0], curr_graph.shape[1], curr_graph.shape[2]), dtype=np.float32)
-    spred_adj = np.multiply(ones, norm_adj)
-    labels= np.append(np.zeros(shape=(curr_graph.shape[0], curr_graph.shape[1], 1)), split[1], axis=2)
-    return np.add(spred_adj, labels)

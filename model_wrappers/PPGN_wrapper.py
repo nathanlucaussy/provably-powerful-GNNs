@@ -58,7 +58,7 @@ class PPGNWrapper(ModelWrapper):
         graph_label = int(data.y)
 
         return((to_adj_mat_with_features(edge_index, num_nodes, True, False, False, 
-                                         node_features=node_labels, num_node_features=num_node_labels),
+                                         node_features=node_labels, num_node_features=num_node_labels, norm=True),
                 graph_label))
 
     # transform a torch_geometric.data.Data object to the matrix needed for PPGN-style models 
@@ -74,7 +74,7 @@ class PPGNWrapper(ModelWrapper):
 
         return((to_adj_mat_with_features(edge_index, num_nodes, True, True, True,
                                          node_features=node_features, edge_features=edge_features, node_pos=node_pos,
-                                         num_node_features=num_node_features, num_edge_features=num_edge_features),
+                                         num_node_features=num_node_features, num_edge_features=num_edge_features, norm=True),
                 data.y))
 
 

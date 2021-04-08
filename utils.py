@@ -15,7 +15,7 @@ def one_hot_to_ints(tensor):
 # outputs matrix for input to PPGN-style models
 def to_adj_mat_with_features(sparse_mat, num_nodes, has_node_features, has_edge_features, has_node_positions,
                              node_features=None, edge_features=None, node_pos=None, 
-                             num_node_features=0, num_edge_features=0):
+                             num_node_features=0, num_edge_features=0, norm=False):
 
     adj_mat = [[0 for i in range(num_nodes)] for j in range(num_nodes)]
     for index in range(len(sparse_mat[0])):
@@ -46,6 +46,9 @@ def to_adj_mat_with_features(sparse_mat, num_nodes, has_node_features, has_edge_
     # add distance matrix on index [-1]
     if has_node_positions:
         adj_and_features_array[:,:,-1] = dist_matrix
+        
+    if norm:
+        adj_and_features_array = normalize_graph(adj_and_features_array)
 
     transposed = np.transpose(adj_and_features_array, [2,0,1])
     return(torch.from_numpy(transposed))
@@ -90,3 +93,17 @@ def mean_and_std(train_set):
     train_labels_std = all_labels.std(0)
 
     return train_labels_mean, train_labels_std
+
+def normalize_graph(curr_graph):
+
+    split = np.split(curr_graph, [1], axis=2)
+
+    adj = np.squeeze(split[0], axis=2)
+    deg = np.sqrt(np.sum(adj, 0))
+    deg = np.divide(1., deg, out=np.zeros_like(deg), where=deg!=0)
+    normal = np.diag(deg)
+    norm_adj = np.expand_dims(np.matmul(np.matmul(normal, adj), normal), axis=2)
+    ones = np.ones(shape=(curr_graph.shape[0], curr_graph.shape[1], curr_graph.shape[2]), dtype=np.float32)
+    spred_adj = np.multiply(ones, norm_adj)
+    labels= np.append(np.zeros(shape=(curr_graph.shape[0], curr_graph.shape[1], 1), dtype=np.float32), split[1], axis=2)
+    return np.add(spred_adj, labels)
