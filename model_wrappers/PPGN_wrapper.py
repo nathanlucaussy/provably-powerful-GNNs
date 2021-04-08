@@ -58,8 +58,6 @@ class PPGNWrapper(ModelWrapper):
 
         graph_label = int(data.y)
 
-        return((to_adj_mat_with_features(edge_index, num_nodes, True, False, False, 
-                                         node_features=node_labels, num_node_features=num_node_labels, norm=True),
         return((to_adj_mat_with_features(edge_index, num_nodes, has_node_labels, False, False, 
                                          node_features=node_labels, num_node_features=num_node_labels, norm=True),
                 graph_label))
