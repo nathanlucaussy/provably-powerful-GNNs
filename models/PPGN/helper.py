@@ -53,16 +53,3 @@ def split_to_batches(graphs, batch_size):
         r_graphs.append(curr_batch)
         
     return r_graphs
-    # r_graphs = []
-    # r_labels = []
-    # for k in range(len(graphs)):
-    #     r_graphs = r_graphs + np.split(graphs[k], [j for j in range(size, graphs[k].shape[0], size)])
-    #     r_labels = r_labels + np.split(labels[k], [j for j in range(size, labels[k].shape[0], size)])
-
-    # # Avoid bug for batch_size=1, where instead of creating numpy array of objects, we had numpy array of floats with
-    # # different sizes - could not reshape
-    # ret1, ret2 = np.empty(len(r_graphs), dtype=object), np.empty(len(r_labels), dtype=object)
-    # ret1[:] = r_graphs
-    # ret2[:] = r_labels
-    # return ret1, ret2
-
