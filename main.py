@@ -1,12 +1,15 @@
 import argparse
 import re
 from model_wrappers import *
+import time
+import os
 
 models = {
     'PPGN' : PPGNWrapper,
     'GIN' : GINWrapper,
     'DGCNN' : DGCNNWrapper,
-    'DiffPool' : DiffPoolWrapper
+    'DiffPool' : DiffPoolWrapper,
+    'PPGNNew' : PPGNNewDataFormatWrapper
 }
 
 datasets = [
@@ -48,6 +51,10 @@ def main():
     accuracy = model_wrapper.run()
     print('\n\nRUN COMPLETED')
     print(f'Accuracy of {args.model} on {args.dataset} is: {accuracy}')
+    if not os.path.exists('log/'):
+        os.mkdir('log')
+    with open(f'log/{time.strftime("%Y%m%d-%H%M%S")}.txt', 'w') as f:
+        f.write(f'model: {args.model}\ndataset: {args.dataset}\nconfig: {args.config}\naccuracy: {accuracy}')
 
 # Convert string to dict    
 def dict_load(s):

@@ -3,6 +3,7 @@ import torch
 import torch.nn.functional as F
 from utils import cross_val_generator, mean_and_std
 from .helper import get_batches
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 lr_parameters = [0.00005, 0.0001, 0.0005, 0.001]
 decay_parameters = [0.5, 1]
@@ -103,7 +104,7 @@ def CV_10(model_class, dataset, config):
     print_freq = config.print_freq
     num_parts = 10
     accuracy_sum = 0
-
+    
     #For each partition:
     for test_idx, (train_chunks, test_chunk) in enumerate(cross_val_generator(dataset, num_parts)):
         #Train Model

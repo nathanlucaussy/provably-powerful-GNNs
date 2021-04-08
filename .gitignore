@@ -3,3 +3,5 @@ Nathan_experiments.ipynb
 **/.DS_Store
 .ipynb_checkpoints/
 __pycache__/
+log/
+*.bat
