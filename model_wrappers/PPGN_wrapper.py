@@ -5,9 +5,9 @@ from dataclasses import dataclass
 
 class PPGNWrapper(ModelWrapper):
     
-    LEARNING_RATES = {'COLLAB': 0.0001, 'IMDBBINARY': 0.00005, 'IMDBMULTI': 0.0001, 'MUTAG': 0.0001, 'NCI1':0.0001, 'NCI109':0.0001, 'PROTEINS': 0.001, 'PTC': 0.0001, 'QM9': 0.0001}
-    DECAY_RATES = {'COLLAB': 0.5, 'IMDBBINARY': 0.5, 'IMDBMULTI': 0.75, 'MUTAG': 1.0, 'NCI1':0.75, 'NCI109':0.75, 'PROTEINS': 0.5, 'PTC': 1.0, 'QM9': 0.5}
-    EPOCHS = {'COLLAB': 150, 'IMDBBINARY': 100, 'IMDBMULTI': 150, 'MUTAG': 500, 'NCI1': 200, 'NCI109': 250, 'PROTEINS': 100, 'PTC': 400, 'QM9': 500}
+    LEARNING_RATES = {'COLLAB': 0.0001, 'IMDB-BINARY': 0.00005, 'IMDB-MULTI': 0.0001, 'MUTAG': 0.0001, 'NCI1':0.0001, 'NCI109':0.0001, 'PROTEINS': 0.001, 'PTC_FM': 0.0001, 'QM9': 0.0001}
+    DECAY_RATES = {'COLLAB': 0.5, 'IMDB-BINARY': 0.5, 'IMDB-MULTI': 0.75, 'MUTAG': 1.0, 'NCI1':0.75, 'NCI109':0.75, 'PROTEINS': 0.5, 'PTC_FM': 1.0, 'QM9': 0.5}
+    EPOCHS = {'COLLAB': 150, 'IMDB-BINARY': 100, 'IMDB-MULTI': 150, 'MUTAG': 500, 'NCI1': 200, 'NCI109': 250, 'PROTEINS': 100, 'PTC_FM': 400, 'QM9': 500}
     
     @dataclass
     class Config:
@@ -37,8 +37,6 @@ class PPGNWrapper(ModelWrapper):
             self.config.input_size = self.data.num_node_labels + 1
             self.config.output_size = self.data.num_classes
 
-        #self.config.node_labels = self.data.num_node_labels
-        #self.config.num_classes = self.data.num_classes
         self.model = PPGN.ppgn.PPGN
      
     # transform a torch_geometric.data.Data object to the matrix needed for PPGN-style models and *graph label*
@@ -53,13 +51,19 @@ class PPGNWrapper(ModelWrapper):
     def transform_data_classification(self, data):
         edge_index = data.edge_index
         num_nodes = data.num_nodes
+
+        num_node_labels = data.num_node_features
+        has_node_labels = num_node_labels > 0
         node_labels = data.x
-        num_node_labels = data.x[0].shape[0]
+
         graph_label = int(data.y)
 
         return((to_adj_mat_with_features(edge_index, num_nodes, True, False, False, 
                                          node_features=node_labels, num_node_features=num_node_labels, norm=True),
+        return((to_adj_mat_with_features(edge_index, num_nodes, has_node_labels, False, False, 
+                                         node_features=node_labels, num_node_features=num_node_labels, norm=True),
                 graph_label))
+
 
     # transform a torch_geometric.data.Data object to the matrix needed for PPGN-style models 
     # when doing regression on QM9, and the graph labels  

@@ -14,7 +14,14 @@ models = {
 
 datasets = [
     'MUTAG', 
-    'QM9'
+    'QM9',
+    'COLLAB',
+    'NCI1',
+    'NCI109',
+    'IMDB-BINARY',
+    'IMDB-MULTI',
+    'PROTEINS',
+    'PTC_FM'
 ]
 
 def main():

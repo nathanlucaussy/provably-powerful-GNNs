@@ -61,8 +61,13 @@ class DiffPoolWrapper(ModelWrapper):
         edge_index = data.edge_index
         num_nodes = data.num_nodes
         label = data.y[0]
-        node_labels = one_hot_to_ints(data.x)
-        node_features = data.x
+
+        if data.x is not None:
+            node_features = data.x
+        else:
+            node_features = torch.ones((num_nodes, 1))
+
+        node_labels = one_hot_to_ints(node_features)
 
         G = nx.Graph()
         G.add_nodes_from(range(num_nodes))

@@ -35,8 +35,9 @@ def to_adj_mat_with_features(sparse_mat, num_nodes, has_node_features, has_edge_
             adj_and_features_array[row_index][col_index][0] = 1
     
         # add node features for node 'row_index' on indices [1 ... num_node_features + 1]
-        adj_and_features_array[row_index][row_index][1:num_node_features + 1] = node_features[row_index, :]
-
+        if has_node_features:
+            adj_and_features_array[row_index][row_index][1:num_node_features + 1] = node_features[row_index, :]
+    
     # add edge features (if they exist)
     if has_edge_features:
         for index in range(len(sparse_mat[0])):
