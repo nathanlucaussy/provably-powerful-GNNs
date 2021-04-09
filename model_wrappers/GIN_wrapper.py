@@ -85,13 +85,12 @@ class GINWrapper(ModelWrapper):
         # original 10-fold validation code
         # train_graphs, test_graphs = self.GIN_main.separate_data(graphs, conf.seed, conf.fold_idx)
     
-        model = self.GIN_main.GraphCNN(conf.num_layers, conf.num_mlp_layers, graphs[0].node_features.shape[1], conf.hidden_dim, num_classes, conf.final_dropout, conf.learn_eps, conf.graph_pooling_type, conf.neighbor_pooling_type, device).to(device)
-    
-        optimizer = self.GIN_main.optim.Adam(model.parameters(), lr=conf.lr)
-        scheduler = self.GIN_main.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
-    
         acc_sum = 0
         for train_graphs, test_graphs in cross_val_generator(graphs, 10):
+            model = self.GIN_main.GraphCNN(conf.num_layers, conf.num_mlp_layers, graphs[0].node_features.shape[1], conf.hidden_dim, num_classes, conf.final_dropout, conf.learn_eps, conf.graph_pooling_type, conf.neighbor_pooling_type, device).to(device)
+            optimizer = self.GIN_main.optim.Adam(model.parameters(), lr=conf.lr)
+            scheduler = self.GIN_main.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
+
             for epoch in range(1, conf.epochs + 1):
                 scheduler.step()
 
