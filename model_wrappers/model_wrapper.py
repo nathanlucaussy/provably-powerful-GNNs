@@ -3,6 +3,7 @@ import os
 import sys
 from urllib.request import urlopen
 from zipfile import ZipFile
+from customDataset import customDataset
 
 class ModelWrapper:
     
@@ -19,6 +20,8 @@ class ModelWrapper:
             self.data_dir = os.path.join(self.curr_dir, '../tg_datasets/QM9')
             self.data = QM9(self.data_dir,
                             transform=self.transform_data)
+        elif dataset == "CUSTOM":
+            self.data = customDataset()
         else:
             self.data = TUDataset(self.data_dir,
                                   dataset,

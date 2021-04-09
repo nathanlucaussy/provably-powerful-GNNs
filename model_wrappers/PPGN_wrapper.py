@@ -13,10 +13,10 @@ class PPGNWrapper(ModelWrapper):
     class Config:
         lr = 0.0001
         decay = 0.5
-        epochs = 100
+        epochs = 300
         print_freq = 20
         batch_size = 1
-        param_search = False
+        param_search =False
         verbose = False
         
     config = Config()
@@ -87,6 +87,6 @@ class PPGNWrapper(ModelWrapper):
             lr, decay, accuracy = PPGN.model_utils.param_search(self.model, self.data, self.config)
             print(f'\nPARAMETER SEARCH COMPLETE. ACHIEVED BEST ACCURACY OF {accuracy} with lr={lr}, decay={decay}')
         else:
-            accuracy = PPGN.model_utils.CV_10(self.model, self.data, self.config)
+            accuracy = PPGN.model_utils.CV_10_pairs(self.model, self.data, self.config)
         return accuracy
     

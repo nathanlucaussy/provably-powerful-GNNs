@@ -65,7 +65,7 @@ def param_search(model_class, dataset, config):
             if accuracy > best_acc:
                 best_acc = accuracy
                 best_params = (lr, decay)
-    return *best_params, best_acc
+    return best_params, best_acc
 
 def test(model, test_set, regression=False, mean=None, std=None):
     with torch.no_grad():
@@ -114,6 +114,7 @@ def CV_10(model_class, dataset, config):
             loss = epoch_train(model, train_loader, optimizer, scheduler, regression=config.qm9)
             #display results as the model is training
             if epoch % print_freq == 0:
+                print(test_chunk)
                 print('accuracy:', test(model, test_chunk, config.qm9))
                 print('loss:', loss)
 
@@ -121,6 +122,41 @@ def CV_10(model_class, dataset, config):
         accuracy_sum += test(model, test_chunk, config.qm9)
     return(accuracy_sum / 10)
 
+def CV_10_pairs(model_class, dataset, config):
+    #Partition dataset into 10 sets/chunks for Cross-Validation
+    num_epochs = config.epochs
+    print_freq = config.print_freq
+    num_parts = 10
+    accuracy_sum = 0
+    model = model_class(config).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma=config.decay, step_size=20)
+
+    #For each partition:
+    for test_idx, (train_chunks, test_chunk) in enumerate(cross_val_generator(dataset, num_parts)):
+        #Train Model
+        train = []
+        for (a, b) in train_chunks:
+            #print(b)
+            train += [a]
+            train += [b]
+        test_set = []
+        for (a, b) in test_chunk:
+            test_set += [a]
+            test_set += [b]
+        train_loader = tg.data.DataLoader(train, batch_size=config.batch_size, shuffle=True)
+        print(f'\nTraining using test chunk {test_idx+1}/{num_parts}')
+        for epoch in range(1, num_epochs + 1):
+            print(f'epoch: {epoch}/{num_epochs}')
+            loss = epoch_train(model, train_loader, optimizer, scheduler, regression=config.qm9)
+            #display results as the model is training
+            if epoch % print_freq == 0:
+                print('accuracy:', test(model, test_set, config.qm9))
+                print('loss:', loss)
+
+        #Test Model
+        accuracy_sum += test(model, test_set, config.qm9)
+    return(accuracy_sum / 10)
 
 def CV_regression(model_class, dataset, config):
     num_epochs = config.epochs

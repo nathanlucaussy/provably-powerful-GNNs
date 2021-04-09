@@ -11,7 +11,8 @@ models = {
 
 datasets = [
     'MUTAG', 
-    'QM9'
+    'QM9',
+    'CUSTOM'
 ]
 
 def main():
