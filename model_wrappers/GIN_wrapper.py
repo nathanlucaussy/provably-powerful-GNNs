@@ -92,19 +92,12 @@ class GINWrapper(ModelWrapper):
             scheduler = self.GIN_main.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
 
             for epoch in range(1, conf.epochs + 1):
+                self.GIN_main.train(conf, model, device, list(train_graphs), optimizer, epoch)
                 scheduler.step()
+        
+            acc_train, acc_test = self.GIN_main.test(conf, model, device, list(train_graphs), list(test_graphs), 0)
+            acc_sum += acc_test
 
-                avg_loss = self.GIN_main.train(conf, model, device, list(train_graphs), optimizer, epoch)
-                acc_train, acc_test = self.GIN_main.test(conf, model, device, list(train_graphs), list(test_graphs), epoch)
-                acc_sum += acc_test
-        
-                if not conf.filename == "":
-                    with open(conf.filename, 'w') as f:
-                        f.write("%f %f %f" % (avg_loss, acc_train, acc_test))
-                        f.write("\n")
-                print("")
-        
-                print(model.eps)
         avg_acc = acc_sum / 10
         return avg_acc
         
