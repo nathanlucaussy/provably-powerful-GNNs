@@ -5,8 +5,9 @@ class PPGN(nn.Module):
     def __init__(self, config):
         super().__init__()
         # Hard-coded config values
-        self.new_suffix = True 
-        block_features = [400, 400, 400]
+        self.new_suffix = True
+        depth = config.depth
+        block_features = [config.block_feat, config.block_feat, config.block_feat]
         
         num_orig_features = config.input_size
         output_size = config.output_size
@@ -15,7 +16,7 @@ class PPGN(nn.Module):
         prev_layer_features = num_orig_features
         self.blocks = nn.ModuleList()
         for next_layer_features in block_features:
-            self.blocks.append(RegBlock(prev_layer_features, next_layer_features))
+            self.blocks.append(RegBlock(prev_layer_features, next_layer_features, depth))
             prev_layer_features = next_layer_features
 
         self.fc_layers = nn.ModuleList()
@@ -61,11 +62,11 @@ def diag_offdiag_maxpool(x):
 
 class RegBlock(nn.Module):
     
-    def __init__(self, in_features, out_features):
+    def __init__(self, in_features, out_features, depth):
         super().__init__()
 
-        self.mlp1 = MlpBlock(in_features, out_features)
-        self.mlp2 = MlpBlock(in_features, out_features)
+        self.mlp1 = MlpBlock(in_features, out_features, depth)
+        self.mlp2 = MlpBlock(in_features, out_features, depth)
         self.skip = Skip(in_features + out_features, out_features)
 
     def forward(self, input):
@@ -76,10 +77,8 @@ class RegBlock(nn.Module):
 
 class MlpBlock(nn.Module):
 
-    def __init__(self, in_features, out_features):
+    def __init__(self, in_features, out_features, depth):
         super().__init__()
-        # Hardcoded
-        depth = 2
 
         self.activation = nn.functional.relu
         self.convs = nn.ModuleList()
