@@ -18,6 +18,8 @@ class PPGNWrapper(ModelWrapper):
         batch_size = 64
         param_search = False
         verbose = False
+        block_feat = 400
+        depth = 2
         
     config = Config()
     
