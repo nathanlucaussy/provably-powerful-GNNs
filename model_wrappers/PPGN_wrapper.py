@@ -1,6 +1,6 @@
 from .model_wrapper import ModelWrapper
-from models import PPGN
-from utils import one_hot_to_ints, to_adj_mat_with_features
+from models.PPGN import PPGN, CV_regression, param_search, CV_10
+from utils import to_adj_mat_with_features
 from dataclasses import dataclass
 
 class PPGNWrapper(ModelWrapper):
@@ -37,7 +37,7 @@ class PPGNWrapper(ModelWrapper):
             self.config.input_size = self.data.num_node_labels + 1
             self.config.output_size = self.data.num_classes
 
-        self.model = PPGN.ppgn.PPGN
+        self.model = PPGN
      
     # transform a torch_geometric.data.Data object to the matrix needed for PPGN-style models and *graph label*
     def transform_data(self, data):
@@ -84,11 +84,11 @@ class PPGNWrapper(ModelWrapper):
     def run(self):       
         # For now, we won't allow param search on qm9
         if self.qm9:
-            accuracy = PPGN.model_utils.CV_regression(self.model, self.data, self.config)
+            accuracy = CV_regression(self.model, self.data, self.config)
         elif self.config.param_search:
-            lr, decay, accuracy = PPGN.model_utils.param_search(self.model, self.data, self.config)
+            lr, decay, accuracy = param_search(self.model, self.data, self.config)
             print(f'\nPARAMETER SEARCH COMPLETE. ACHIEVED BEST ACCURACY OF {accuracy} with lr={lr}, decay={decay}')
         else:
-            accuracy = PPGN.model_utils.CV_10(self.model, self.data, self.config)
+            accuracy = CV_10(self.model, self.data, self.config)
         return accuracy
     

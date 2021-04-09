@@ -1,6 +1,8 @@
 from .model_wrapper import ModelWrapper
-from models.PPGN_variants import new_data_format
+#from models.PPGN_variants import new_data_format
+from models.PPGN import PPGN, CV_regression, param_search, CV_10
 from dataclasses import dataclass
+import torch
 
 class PPGNNewDataFormatWrapper(ModelWrapper):
     
@@ -36,20 +38,54 @@ class PPGNNewDataFormatWrapper(ModelWrapper):
             self.config.input_size = self.data.num_node_labels
             self.config.output_size = self.data.num_classes
 
-        self.model = new_data_format.PPGN
+        self.model = PPGN
      
-    # transform a torch_geometric.data.Data object to the matrix needed for PPGN-style models and *graph label*
+    # transform a torch_geometric.data.Data object to the matrix needed for PPGNNewData-style models and *graph label*
     def transform_data(self, data):
-        return new_data_format.transform(data)
+        return self.transform(data)
     
     def run(self):
         # For now, we won't allow param search on qm9
         if self.qm9:
-            accuracy = new_data_format.CV_regression(self.model, self.data, self.config)
+            accuracy = CV_regression(self.model, self.data, self.config)
         elif self.config.param_search:
-            lr, decay, accuracy = new_data_format.param_search(self.model, self.data, self.config)
+            lr, decay, accuracy = param_search(self.model, self.data, self.config)
             print(f'\nPARAMETER SEARCH COMPLETE. ACHIEVED BEST ACCURACY OF {accuracy} with lr={lr}, decay={decay}')
         else:
-            accuracy = new_data_format.CV_10(self.model, self.data, self.config)
+            accuracy = CV_10(self.model, self.data, self.config)
         return accuracy
+    
+    def transform(self, data):
+        num_nodes = data.num_nodes
+        node_feats = data.x
+        if node_feats is None:
+            node_feats = torch.zeros((num_nodes, 1))
+        num_node_feats = len(node_feats[0])
+        edge_feats = data.edge_attr
+        if edge_feats is None:
+            edge_feats = torch.zeros((len(data.edge_index[0]), num_node_feats))
+            edge_feats[:,0] = 1
+            num_edge_feats = num_node_feats
+        else:
+            num_edge_feats = len(edge_feats[0])
+        if num_edge_feats < num_node_feats:
+            max_dim = num_node_feats
+            diff = num_node_feats - num_edge_feats
+            # Fill out edge_feats with extra dims
+            edge_feats = torch.stack([torch.cat((e, torch.zeros(diff))) for e in edge_feats])
+        elif num_node_feats < num_edge_feats:
+            max_dim = num_edge_feats
+            diff = num_edge_feats - num_node_feats
+            node_feats = torch.stack([torch.cat((v, torch.zeros(diff))) for v in node_feats])
+        else:
+            max_dim = num_node_feats
+            
+        mat = torch.zeros(num_nodes, num_nodes, max_dim)
+        for edge_feat, v1, v2 in zip(edge_feats, data.edge_index[0], data.edge_index[1]):
+            mat[v1][v2] = edge_feat
+            
+        for v1, node_feat in enumerate(node_feats):
+            mat[v1][v1] = node_feat
+            
+        return (mat.transpose(0, 1).transpose(0,2), int(data.y))
     

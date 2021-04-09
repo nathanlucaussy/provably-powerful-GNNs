@@ -9,11 +9,18 @@ def one_hot_to_ints(tensor):
     return(ints)
 
 def transform(data):
-    edge_feats = data.edge_attr
-    num_edge_feats = len(edge_feats[0])
+    num_nodes = data.num_nodes
     node_feats = data.x
+    if node_feats is None:
+        node_feats = torch.zeros((num_nodes, 1))
     num_node_feats = len(node_feats[0])
-    num_nodes = len(data.x)
+    edge_feats = data.edge_attr
+    if edge_feats is None:
+        edge_feats = torch.zeros((len(data.edge_index[0]), num_node_feats))
+        edge_feats[:,0] = 1
+        num_edge_feats = num_node_feats
+    else:
+        num_edge_feats = len(edge_feats[0])
     if num_edge_feats < num_node_feats:
         max_dim = num_node_feats
         diff = num_node_feats - num_edge_feats
@@ -23,6 +30,8 @@ def transform(data):
         max_dim = num_edge_feats
         diff = num_edge_feats - num_node_feats
         node_feats = torch.stack([torch.cat((v, torch.zeros(diff))) for v in node_feats])
+    else:
+        max_dim = num_node_feats
         
     mat = torch.zeros(num_nodes, num_nodes, max_dim)
     for edge_feat, v1, v2 in zip(edge_feats, data.edge_index[0], data.edge_index[1]):
