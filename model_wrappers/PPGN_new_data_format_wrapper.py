@@ -42,7 +42,7 @@ class PPGNNewDataFormatWrapper(ModelWrapper):
     def transform_data(self, data):
         return new_data_format.transform(data)
     
-    def run(self):       
+    def run(self):
         # For now, we won't allow param search on qm9
         if self.qm9:
             accuracy = new_data_format.CV_regression(self.model, self.data, self.config)

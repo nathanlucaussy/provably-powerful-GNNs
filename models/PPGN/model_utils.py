@@ -1,4 +1,3 @@
-import torch_geometric as tg
 import torch
 import torch.nn.functional as F
 from utils import cross_val_generator, mean_and_std
@@ -35,9 +34,10 @@ def epoch_train(model, train_batches, optimizer, scheduler, regression=False, me
         loss.backward()
 
         optimizer.step()
-        scheduler.step()
+        
         loss_sum += loss.item()
         count = count + len(y)
+    scheduler.step()
     #return loss normalised for number of graphs
     return (loss_sum/count)
 
@@ -107,12 +107,12 @@ def CV_10(model_class, dataset, config):
     #For each partition:
     for test_idx, (train_chunks, test_chunk) in enumerate(cross_val_generator(dataset, num_parts)):
         #Train Model
+        print(f'\nTraining using test chunk {test_idx+1}/{num_parts}')
         model = model_class(config).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma=config.decay, step_size=20)
         train_batches = get_batches(train_chunks, config.batch_size)
-        #train_loader = tg.data.DataLoader(train_chunks, batch_size=config.batch_size, shuffle=True)
-        print(f'\nTraining using test chunk {test_idx+1}/{num_parts}')
+        
         for epoch in range(1, num_epochs + 1):
             print(f'epoch: {epoch}/{num_epochs}')
             loss = epoch_train(model, train_batches, optimizer, scheduler, regression=config.qm9)
