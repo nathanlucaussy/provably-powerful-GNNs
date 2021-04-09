@@ -102,7 +102,7 @@ def CV_10(model_class, dataset, config):
     num_epochs = config.epochs
     print_freq = config.print_freq
     num_parts = 10
-    accuracy_sum = 0
+    accs = torch.zeros(num_parts)
 
     #For each partition:
     for test_idx, (train_chunks, test_chunk) in enumerate(cross_val_generator(dataset, num_parts)):
@@ -122,8 +122,9 @@ def CV_10(model_class, dataset, config):
                 print('loss:', loss)
 
         #Test Model
-        accuracy_sum += test(model, test_chunk, config.qm9)
-    return(accuracy_sum / 10)
+        accs[test_idx] = test(model, test_chunk, config.qm9)
+
+    return (accs.mean().item(), accs.std().item())
 
 
 def CV_regression(model_class, dataset, config):
