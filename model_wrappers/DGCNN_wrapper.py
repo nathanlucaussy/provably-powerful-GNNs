@@ -80,14 +80,15 @@ class DGCNNWrapper(ModelWrapper):
         self.DGCNN_main.cmd_args.hidden = 128
         self.DGCNN_main.cmd_args.dropout = True
     
-        model = self.DGCNN_main.Classifier().to(device)
-    
-        optimizer = self.DGCNN_main.optim.Adam(model.parameters(), lr=conf.lr)
-        scheduler = self.DGCNN_main.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
+        
     
         acc_sum = 0
         count = 1
         for train_graphs, test_graphs in cross_val_generator(graphs, 10):
+            model = self.DGCNN_main.Classifier().to(device)
+            optimizer = self.DGCNN_main.optim.Adam(model.parameters(), lr=conf.lr)
+            scheduler = self.DGCNN_main.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
+            
             train_idxes = list(range(len(train_graphs)))
             print(f'Running with test set {count}/10')
             model.train()
