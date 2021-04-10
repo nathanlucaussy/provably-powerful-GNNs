@@ -24,6 +24,7 @@ class ModelWrapper:
                                   dataset,
                                   transform=self.transform_data,
                                   use_node_attr=self.use_node_attr)
+        self.data.shuffle() # Shuffle the dataset
         for key, value in config.items():
             if hasattr(self.config, key):
                 setattr(self.config, key, type(getattr(self.config, key))(value))

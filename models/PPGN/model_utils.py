@@ -44,7 +44,6 @@ def epoch_train(model, train_batches, optimizer, scheduler, regression=False, me
 def param_search(model_class, dataset, config):
     model = model_class(config).to(device)
     #split data into training and validation sets:
-    dataset.shuffle()
     split_point = len(dataset) // 9
     train_set = dataset[split_point:]
     val_set = dataset[:split_point]
@@ -134,7 +133,6 @@ def CV_regression(model_class, dataset, config):
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma=config.decay, step_size=20)
 
     #Partition dataset into train / test set
-    dataset.shuffle()
     len_test_set = int(len(dataset) / 10)
     test_set = dataset[:len_test_set]
     train_set = dataset[len_test_set:]
