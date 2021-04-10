@@ -6,7 +6,7 @@ from zipfile import ZipFile
 
 class ModelWrapper:
     
-    use_node_attr = True
+    use_node_attr = False
     curr_dir = os.path.dirname(__file__)
     data_dir = os.path.join(curr_dir, '../tg_datasets')
     models_path = os.path.join(curr_dir, '../models/other')
