@@ -81,8 +81,6 @@ class PPGNWrapper(ModelWrapper):
                                          node_features=node_features, edge_features=edge_features, node_pos=node_pos,
                                          num_node_features=num_node_features, num_edge_features=num_edge_features, norm=True),
                 data.y))
-
-
     
     def run(self):       
         # For now, we won't allow param search on qm9
