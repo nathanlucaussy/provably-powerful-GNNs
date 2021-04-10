@@ -22,6 +22,7 @@ class PPGNNewDataFormatWrapper(ModelWrapper):
         block_feat = 400
         depth = 2
         new_suffix = True
+        version = 1
         
     config = Config()
     
@@ -83,12 +84,22 @@ class PPGNNewDataFormatWrapper(ModelWrapper):
         else:
             max_dim = num_node_feats
             
+        if self.config.version == 2:
+            max_dim += 1
+            
         mat = torch.zeros(num_nodes, num_nodes, max_dim)
         for edge_feat, v1, v2 in zip(edge_feats, data.edge_index[0], data.edge_index[1]):
-            mat[v1][v2] = edge_feat
+            if self.config.version == 2:
+                mat[v1][v2][0] = 1
+                mat[v1][v2][1:] = edge_feat
+            else:
+                mat[v1][v2] = edge_feat
             
         for v1, node_feat in enumerate(node_feats):
-            mat[v1][v1] = node_feat
+            if self.config.version == 2:
+                mat[v1][v1][1:] = node_feat
+            else:
+                mat[v1][v1] = node_feat
         
         y = data.y.squeeze()
         if len(y) == 1:
