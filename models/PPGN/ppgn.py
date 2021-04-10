@@ -4,8 +4,7 @@ import torch.nn as nn
 class PPGN(nn.Module):
     def __init__(self, config):
         super().__init__()
-        # Hard-coded config values
-        self.new_suffix = True
+        self.new_suffix = config.new_suffix
         depth = config.depth
         block_features = [config.block_feat, config.block_feat, config.block_feat]
         

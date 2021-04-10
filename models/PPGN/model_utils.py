@@ -16,7 +16,7 @@ def epoch_train(model, train_batches, optimizer, scheduler, regression=False, me
 
         # normalize y if mean and std were given
         if regression:
-            y = torch.cat(y)
+            y = torch.stack(y)
         else:
             y = torch.tensor(y)
         if mean is not None and std is not None:
@@ -82,12 +82,10 @@ def test(model, test_set, regression=False, mean=None, std=None):
     
             out = model(torch.unsqueeze(X, 0)).cpu()
             if mean is not None and std is not None:
-                out = out * std + mean
+                y = (y - mean) / std
     
-            #if ((data.y[0].item() == 1 and out[0].item() > 0.0)
-            #    or (data.y[0].item() == -1 and out[0].item() <= 0.0)):
             if regression:
-                correct_or_dists += (out-y).abs().sum(dim=0).detach().cpu()
+                correct_or_dists += (out.squeeze()-y).abs().detach().cpu()
             else:
                 if int(torch.argmax(out, 1)) == int(y):
                     correct_or_dists += 1

@@ -7,7 +7,7 @@ import torch
 class PPGNNewDataFormatWrapper(ModelWrapper):
     
     LEARNING_RATES = {'COLLAB': 0.0001, 'IMDB-BINARY': 0.00005, 'IMDB-MULTI': 0.0001, 'MUTAG': 0.0001, 'NCI1':0.0001, 'NCI109':0.0001, 'PROTEINS': 0.001, 'PTC_FM': 0.0001, 'QM9': 0.0001}
-    DECAY_RATES = {'COLLAB': 0.5, 'IMDB-BINARY': 0.5, 'IMDB-MULTI': 0.75, 'MUTAG': 1.0, 'NCI1':0.75, 'NCI109':0.75, 'PROTEINS': 0.5, 'PTC_FM': 1.0, 'QM9': 0.5}
+    DECAY_RATES = {'COLLAB': 0.5, 'IMDB-BINARY': 0.5, 'IMDB-MULTI': 0.75, 'MUTAG': 1.0, 'NCI1':0.75, 'NCI109':0.75, 'PROTEINS': 0.5, 'PTC_FM': 1.0, 'QM9': 0.8}
     EPOCHS = {'COLLAB': 150, 'IMDB-BINARY': 100, 'IMDB-MULTI': 150, 'MUTAG': 500, 'NCI1': 200, 'NCI109': 250, 'PROTEINS': 100, 'PTC_FM': 400, 'QM9': 500}
     
     @dataclass
@@ -21,6 +21,7 @@ class PPGNNewDataFormatWrapper(ModelWrapper):
         verbose = False
         block_feat = 400
         depth = 2
+        new_suffix = True
         
     config = Config()
     
@@ -32,12 +33,12 @@ class PPGNNewDataFormatWrapper(ModelWrapper):
         super(PPGNNewDataFormatWrapper, self).__init__(dataset, config)
         self.config.qm9 = self.qm9
 
+        X, y = self.data[0]
         if self.config.qm9:
-            X, y = self.data[0]
             self.config.input_size = X.shape[0]
             self.config.output_size = y.shape[1]
         else:
-            self.config.input_size = self.data.num_node_labels
+            self.config.input_size = X.shape[0]
             self.config.output_size = self.data.num_classes
 
         self.model = PPGN
@@ -88,6 +89,8 @@ class PPGNNewDataFormatWrapper(ModelWrapper):
             
         for v1, node_feat in enumerate(node_feats):
             mat[v1][v1] = node_feat
-            
-        return (mat.transpose(0, 1).transpose(0,2), int(data.y))
-    
+        
+        y = data.y.squeeze()
+        if len(y) == 1:
+            y = int(y)
+        return (mat.transpose(0, 1).transpose(0,2), y)
