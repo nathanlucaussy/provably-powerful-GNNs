@@ -32,12 +32,12 @@ class PPGNWrapper(ModelWrapper):
         super(PPGNWrapper, self).__init__(dataset, config)
         self.config.qm9 = self.qm9
 
+        X, y = self.data[0]
         if self.config.qm9:
-            X, y = self.data[0]
             self.config.input_size = X.shape[0]
             self.config.output_size = y.shape[1]
         else:
-            self.config.input_size = self.data.num_node_labels + 1
+            self.config.input_size = X.shape[0]
             self.config.output_size = self.data.num_classes
 
         self.model = PPGN
