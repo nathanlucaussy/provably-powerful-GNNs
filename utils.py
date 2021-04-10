@@ -17,10 +17,6 @@ def to_adj_mat_with_features(sparse_mat, num_nodes, has_node_features, has_edge_
                              node_features=None, edge_features=None, node_pos=None, 
                              num_node_features=0, num_edge_features=0, norm=False):
 
-    adj_mat = [[0 for i in range(num_nodes)] for j in range(num_nodes)]
-    for index in range(len(sparse_mat[0])):
-        adj_mat[sparse_mat[0][index]][sparse_mat[1][index]] = 1
-
     num_total_features = num_node_features + num_edge_features + 1
 
     if has_node_positions:
@@ -28,15 +24,13 @@ def to_adj_mat_with_features(sparse_mat, num_nodes, has_node_features, has_edge_
         num_total_features += 1
 
     adj_and_features_array = np.zeros(shape=(num_nodes, num_nodes, num_total_features), dtype=np.float32)
-    for row_index in range(num_nodes):
-
-        # encode adjacency matrix on index [0] of the innermost vectors / feature vector, indexed by edges
-        for col_index in range(num_nodes):
-            adj_and_features_array[row_index][col_index][0] = 1
+            
+    for i in range(len(sparse_mat[0])):
+        adj_and_features_array[sparse_mat[0][i]][sparse_mat[1][i]][0] = 1
     
-        # add node features for node 'row_index' on indices [1 ... num_node_features + 1]
-        if has_node_features:
-            adj_and_features_array[row_index][row_index][1:num_node_features + 1] = node_features[row_index, :]
+    if has_node_features:
+        for i in range(num_nodes):
+            adj_and_features_array[i][i][1:num_node_features + 1] = node_features[i, :]
     
     # add edge features (if they exist)
     if has_edge_features:
