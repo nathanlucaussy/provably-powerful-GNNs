@@ -89,6 +89,8 @@ class PPGNNewDataFormatWrapper(ModelWrapper):
             
         for v1, node_feat in enumerate(node_feats):
             mat[v1][v1] = node_feat
-            
-        return (mat.transpose(0, 1).transpose(0,2), int(data.y))
-    
+        
+        y = data.y.squeeze()
+        if len(y) == 1:
+            y = int(y)
+        return (mat.transpose(0, 1).transpose(0,2), y)
