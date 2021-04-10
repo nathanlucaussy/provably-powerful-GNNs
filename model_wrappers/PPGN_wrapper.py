@@ -20,6 +20,7 @@ class PPGNWrapper(ModelWrapper):
         verbose = False
         block_feat = 400
         depth = 2
+        new_suffix = True
         
     config = Config()
     
