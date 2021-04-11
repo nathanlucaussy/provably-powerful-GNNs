@@ -21,7 +21,9 @@ datasets = [
     'IMDB-BINARY',
     'IMDB-MULTI',
     'PROTEINS',
-    'PTC_FM'
+    'PTC_FM',
+    'AIDS',
+    'BZR_MD'
 ]
 
 def main():
