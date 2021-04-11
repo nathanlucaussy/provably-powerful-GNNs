@@ -60,6 +60,9 @@ class PPGNNewDataFormatWrapper(ModelWrapper):
         return accuracy
     
     def transform(self, data):
+        version = self.config.version
+        if version == 3:
+            return self.transformV3(data)
         num_nodes = data.num_nodes
         node_feats = data.x
         if node_feats is None:
@@ -84,24 +87,45 @@ class PPGNNewDataFormatWrapper(ModelWrapper):
         else:
             max_dim = num_node_feats
             
-        if self.config.version == 2:
+        if version == 2:
             max_dim += 1
             
         mat = torch.zeros(num_nodes, num_nodes, max_dim)
         for edge_feat, v1, v2 in zip(edge_feats, data.edge_index[0], data.edge_index[1]):
-            if self.config.version == 2:
+            if version == 2:
                 mat[v1][v2][0] = 1
                 mat[v1][v2][1:] = edge_feat
             else:
                 mat[v1][v2] = edge_feat
             
         for v1, node_feat in enumerate(node_feats):
-            if self.config.version == 2:
+            if version == 2:
                 mat[v1][v1][1:] = node_feat
             else:
                 mat[v1][v1] = node_feat
         
         y = data.y.squeeze()
-        if len(y) == 1:
+        if y.dim() == 0 or len(y) == 1:
+            y = int(y)
+        return (mat.transpose(0, 1).transpose(0,2), y)
+    
+    def transformV3(self, data):
+        num_nodes = data.num_nodes
+        node_feats = data.x
+        if node_feats is None:
+            #node_feats = torch.zeros((num_nodes, 1))
+            node_feats = []
+            num_node_feats = 0
+        else:
+            num_node_feats = len(node_feats[0])
+        num_aug_nodes = num_nodes + num_node_feats
+        mat = torch.zeros(num_aug_nodes, num_aug_nodes, 1)
+        for v1, v2 in zip(data.edge_index[0], data.edge_index[1]):
+            mat[v1][v2] = torch.tensor([1])
+        for v, node_feat in enumerate(node_feats):
+            mat[v][num_nodes:] = node_feat.unsqueeze(1)
+        
+        y = data.y.squeeze()
+        if y.dim() == 0 or len(y) == 1:
             y = int(y)
         return (mat.transpose(0, 1).transpose(0,2), y)
