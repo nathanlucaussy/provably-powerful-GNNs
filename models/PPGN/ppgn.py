@@ -6,7 +6,7 @@ class PPGN(nn.Module):
         super().__init__()
         self.new_suffix = config.new_suffix
         depth = config.depth
-        block_features = [config.block_feat, config.block_feat, config.block_feat]
+        block_features = [config.block_feat] * config.num_blocks
         
         num_orig_features = config.input_size
         output_size = config.output_size

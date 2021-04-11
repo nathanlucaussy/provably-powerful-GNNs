@@ -19,6 +19,7 @@ class PPGNWrapper(ModelWrapper):
         param_search = False
         verbose = False
         block_feat = 400
+        num_blocks = 3
         depth = 2
         new_suffix = True
         
